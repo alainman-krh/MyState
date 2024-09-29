@@ -18,12 +18,14 @@ class EasyNeoKey_1x4:
 	def _physcan_ispressed(self, idx):
 		return self.oref[idx]
 
-	def process_events_all(self):
+#Process inputs (and trigger events)
+#-------------------------------------------------------------------------------
+	def process_inputs_all(self):
 		"""Also updates state (Typically: Only run once per loop)"""
 		for b in self.btns:
 			b:EasyButton
-			state_pressed = self._physcan_ispressed(b.id)
-			b.process_events(state_pressed)
+			isactive = self._physcan_ispressed(b.id)
+			b.process_withinputs(isactive)
 		return
 
 #Last line

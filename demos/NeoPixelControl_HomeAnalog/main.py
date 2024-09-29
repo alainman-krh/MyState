@@ -73,10 +73,10 @@ ragent = RefreshAgent([STATEBLK_CFG, STATEBLK_MAIN]) #Registers self listener
 
 #==Main code entry
 #===============================================================================
-print("HELLO11")
+print("HELLO12")
 STATEBLK_MAIN.signal_process(SigSet("Main", "kitchen.level", 5))
 STATEBLK_MAIN.signal_process(SigSet("Main", "room1.level", 100))
 while True:
 	for sw in KPSWITCHES.values():
-		sw.handler.process_events(sw.state_pressed())
-	KPKNOB.handler.process_events(KPKNOB.pos_getdelta())
+		sw.handler.process_withinputs(sw.btn_isactive())
+	KPKNOB.handler.process_withinputs(KPKNOB.pos_getdelta())

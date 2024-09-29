@@ -22,19 +22,34 @@ class Profiles:
 	#TODO: Add more profiles!
 
 
-#=EasyButtonIF
+#=ButtonSensorIF
 #===============================================================================
-class EasyButtonIF:
-	"""NOTE
+class ButtonSensorIF:
+	#@abstractmethod
+	def isactive(self):
+		"""Is button active (typ: pressed)?"""
+		pass
+
+
+#=EasyButton
+#===============================================================================
+class EasyButton:
+	"""EasyButton: Generic FSM implementation for interacting with buttons.
+	USAGE: User derives this `EasyButton` & implements custom `handle_*` functions.
+
+	NOTE:
 	- `id`: In `hanle_*` events meant for convenience when 1 class definition
 	        is used with multiple buttons.
 	"""
-	#@abstractmethod
-	def process_events(self, state_pressed):
-		"""Also updates state-tracking data (Typically: Only run once per loop)"""
-		pass
+	#Finite State Machine (FSM) controlling interations with buttons
+	def __init__(self, id=None, btnsense:ButtonSensorIF=None, profile=Profiles.DEFAULT):
+		self.id = id
+		self.btnsense = btnsense
+		self.profile = profile
+		self._procfn_activestate = self._procfn_inactive
+		self.press_start = now_ms()
 
-#User-facing event handlers (optionally/application-dependent)
+#User-facing event handlers (optional/application-dependent)
 #-------------------------------------------------------------------------------
 	def handle_press(self, id):
 		"""Button down"""
@@ -44,65 +59,56 @@ class EasyButtonIF:
 	def handle_doublepress(self, id):
 		pass
 	def handle_hold(self, id):
-		"""Triggered every time process_events() is called"""
+		"""Triggered every time `process_[with]inputs()` is called (when held)."""
 		pass
 	def handle_release(self, id):
 		pass
 
-
-#=EasyButton
-#===============================================================================
-class EasyButton(EasyButtonIF):
-	"""EasyButton: Generic FSM implementation for interacting with buttons
-	(Must implement event handlers declared in interface `EasyButtonIF`.)
-	"""
-	#Finite State Machine (FSM) controlling interations with buttons
-	def __init__(self, id=None, profile=Profiles.DEFAULT):
-		self.id = id
-		self.profile = profile
-		self._statefn_active = self._statefn_inactive
-		self.press_start = now_ms()
-
 #State-dependent (internal) event handlers
 #-------------------------------------------------------------------------------
-	def _statefn_inactive(self, pressed): #Typ: Not pressed
+	def _procfn_inactive(self, isbtnactive): #Typ: Not pressed
 		now = now_ms()
-		det_activate = pressed #FSM signal
-		if det_activate:
+		sig_activate = isbtnactive #FSM signal
+		if sig_activate:
 			self.press_start = now
-			self._statefn_active = self._statefn_heldshort
+			self._procfn_activestate = self._procfn_heldshort
 			self.handle_press(self.id)
 
-	def _statefn_heldshort(self, pressed): #Actively held (typ: pressed) for < LONGPRESS_MS
+	def _procfn_heldshort(self, isbtnactive): #Actively held (typ: pressed) for < LONGPRESS_MS
 		profile = self.profile
-		det_release = (not pressed) #FSM signal
-		if det_release:
-			self._statefn_active = self._statefn_inactive
+		sig_release = (not isbtnactive) #FSM signal
+		if sig_release:
+			self._procfn_activestate = self._procfn_inactive
 			self.handle_release(self.id)
 			return
 		
 		now = now_ms()
 		elapsed = ms_elapsed(self.press_start, now)
-		det_longpress = (elapsed >= profile.LONGPRESS_MS) #FSM signal
-		if det_longpress:
-			self._statefn_active = self._statefn_heldlong
+		sig_longpress = (elapsed >= profile.LONGPRESS_MS) #FSM signal
+		if sig_longpress:
+			self._procfn_activestate = self._procfn_heldlong
 			self.handle_longpress(self.id)
 			#Don't return. Still want to trigger hold event
 
 		self.handle_hold(self.id)
 
-	def _statefn_heldlong(self, pressed): #Actively held (typ: pressed) for >= LONGPRESS_MS
-		det_release = (not pressed) #FSM signal
-		if det_release:
-			self._statefn_active = self._statefn_inactive
+	def _procfn_heldlong(self, isbtnactive): #Actively held (typ: pressed) for >= LONGPRESS_MS
+		sig_release = (not isbtnactive) #FSM signal
+		if sig_release:
+			self._procfn_activestate = self._procfn_inactive
 			self.handle_release(self.id)
 			return
 
 		self.handle_hold(self.id)
 
-#Process button events
+#Process inputs (and trigger events)
 #-------------------------------------------------------------------------------
-	def process_events(self, state_pressed):
-		self._statefn_active(state_pressed)
+	def process_withinputs(self, isbtnactive):
+		"""Provide inputs explicitly"""
+		self._procfn_activestate(isbtnactive)
+
+	def process_inputs(self):
+		isbtnactive = self.btnsense.isactive() #`.btnsense` must be specified to call.
+		self._procfn_activestate(isbtnactive)
 
 #Last line

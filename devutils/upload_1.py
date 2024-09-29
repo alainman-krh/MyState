@@ -9,6 +9,6 @@ DEST_DRIVE = "E:\\"
 proj = "NeoPixelControl_HomeAnalog"
 
 proj = joinpath("demos", proj)
-UploadProj(proj, DEST_DRIVE, refresh_libs=False)
+UploadProj(proj, DEST_DRIVE, refresh_libs=True)
 
 #Last line

@@ -32,8 +32,8 @@ class KeypadElement:
 		self.keysense = digitalio.DigitalInOut(pin)
 		self.keysense.direction = digitalio.Direction.INPUT
 		self.keysense.pull = digitalio.Pull.UP
-	def state_pressed(self):
-		return 0 if self.keysense.value else 1 #Active low
+	def btn_isactive(self):
+		return False if self.keysense.value else True #Active low
 	def pixel_set(self, value):
 		"""Must be a tuple(R,G,B)"""
 		KEYPAD_NPX[self.idx] = value
