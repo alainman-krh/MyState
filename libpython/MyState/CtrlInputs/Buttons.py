@@ -60,41 +60,49 @@ class EasyButton(EasyButtonIF):
 	def __init__(self, id=None, profile=Profiles.DEFAULT):
 		self.id = id
 		self.profile = profile
-		self.pevents_currentstate = self._pevents_up
+		self._statefn_active = self._statefn_inactive
 		self.press_start = now_ms()
 
 #State-dependent (internal) event handlers
 #-------------------------------------------------------------------------------
-	def _pevents_up(self, pressed):
+	def _statefn_inactive(self, pressed): #Typ: Not pressed
 		now = now_ms()
-		if pressed:
+		det_activate = pressed #FSM signal
+		if det_activate:
 			self.press_start = now
-			self.pevents_currentstate = self._pevents_press
+			self._statefn_active = self._statefn_heldshort
 			self.handle_press(self.id)
 
-	def _pevents_press(self, pressed): #Singlepress
-		now = now_ms()
+	def _statefn_heldshort(self, pressed): #Actively held (typ: pressed) for < LONGPRESS_MS
 		profile = self.profile
-		if pressed:
-			elapsed = ms_elapsed(self.press_start, now)
-			if elapsed >= profile.LONGPRESS_MS:
-				self.pevents_currentstate = self._pevents_longpress
-				self.handle_longpress(self.id)
-			self.handle_hold(self.id)
-		else:
-			self.pevents_currentstate = self._pevents_up
+		det_release = (not pressed) #FSM signal
+		if det_release:
+			self._statefn_active = self._statefn_inactive
 			self.handle_release(self.id)
+			return
+		
+		now = now_ms()
+		elapsed = ms_elapsed(self.press_start, now)
+		det_longpress = (elapsed >= profile.LONGPRESS_MS) #FSM signal
+		if det_longpress:
+			self._statefn_active = self._statefn_heldlong
+			self.handle_longpress(self.id)
+			#Don't return. Still want to trigger hold event
 
-	def _pevents_longpress(self, pressed):
-		if pressed:
-			self.handle_hold(self.id)
-		else:
-			self.pevents_currentstate = self._pevents_up
+		self.handle_hold(self.id)
+
+	def _statefn_heldlong(self, pressed): #Actively held (typ: pressed) for >= LONGPRESS_MS
+		det_release = (not pressed) #FSM signal
+		if det_release:
+			self._statefn_active = self._statefn_inactive
 			self.handle_release(self.id)
+			return
+
+		self.handle_hold(self.id)
 
 #Process button events
 #-------------------------------------------------------------------------------
 	def process_events(self, state_pressed):
-		self.pevents_currentstate(state_pressed)
+		self._statefn_active(state_pressed)
 
 #Last line
