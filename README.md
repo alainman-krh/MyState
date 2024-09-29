@@ -1,6 +1,8 @@
 # MyState
 Framework to simplify configuration and control of appliance-like devices.
-Turn on IOLink to make your device controllable from a serial/IO connection.
+
+Extras:
+- (TODO) Turn on `IOLink` to allow outside control though serial/IO connection.
 
 ## Features
 - Route raw hardware signals through ready-built filters that provide a solid human-interface experience.
@@ -10,9 +12,9 @@ Turn on IOLink to make your device controllable from a serial/IO connection.
 # Details
 - Framework provides access to device state using something the author calls a
   "Model-React-Controller" (MRC) analogous to a Model-View-Controller.
-- "React" is used instead of "View" since uC devices more generally described
-  as reacting to changes in the model/state data.
+  - "React" is used instead of "View" since uC devices more generally described
+    as reacting to changes in the model/state data.
 
 # Comments
-- Libraries meant to handle user input that might get corrupted.
+- Libraries meant to handle user input that might get corrupted (ex: debounce signals).
 - Will not typically raise exceptions. Will just ignore what can't be processed.
