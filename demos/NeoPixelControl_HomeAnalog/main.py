@@ -1,8 +1,9 @@
 #demos\NeoPixelControl_HomeAnalog\Main.py
 #-------------------------------------------------------------------------------
-from StateDef import STATEBLK_CFG, STATEBLK_MAIN, MYSTATE, StateBlock
+from StateDef import STATEBLK_CFG, STATEBLK_MAIN, MYSTATE, StateBlock, PHYCTRL
 from HAL_Macropad import KeypadElement, EncoderSense, KEYPAD_ENCODER
-from MyState.Predefined.Buttons import EasyButton_Press, EasyButton_Release
+from MyState.Predefined.Buttons import EasyButton_Press
+from MyState.Predefined.Buttons import EasyButton_SignalPressRel as KPButton
 from MyState.Predefined.RotEncoders import EasyEncoder_Incr
 from MyState.Signals import SigSet, SigGet, SigIncrement, SigToggle
 from MyState.Signals import SigAbstract, SigUpdate
@@ -13,8 +14,8 @@ from MyState.SigTools import SignalListenerIF
 #==Main configuration
 #===============================================================================
 KPSWITCHES = {
-	"kitchen": KeypadElement(0, EasyButton_Press(MYSTATE, SigToggle("Main", "kitchen.enabled"))),
-	"room1": KeypadElement(1, EasyButton_Press(MYSTATE, SigToggle("Main", "room1.enabled"))),
+	"kitchen": KeypadElement(0, "kitchen", PHYCTRL, "KP"),
+	"room1": KeypadElement(1, "room1", PHYCTRL, "KP"),
 }
 #Context dependent. SigIncrement will be changed:
 KPKNOB = EncoderSense(KEYPAD_ENCODER,
@@ -73,10 +74,10 @@ ragent = RefreshAgent([STATEBLK_CFG, STATEBLK_MAIN]) #Registers self listener
 
 #==Main code entry
 #===============================================================================
-print("HELLO12")
+print("HELLO14")
 STATEBLK_MAIN.signal_process(SigSet("Main", "kitchen.level", 5))
 STATEBLK_MAIN.signal_process(SigSet("Main", "room1.level", 100))
 while True:
 	for sw in KPSWITCHES.values():
-		sw.handler.process_withinputs(sw.btn_isactive())
+		sw.btn.process_inputs()
 	KPKNOB.handler.process_withinputs(KPKNOB.pos_getdelta())

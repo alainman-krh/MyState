@@ -1,6 +1,15 @@
 #MyState/RotEncoders.py
 #-------------------------------------------------------------------------------
 
+#=EncoderSensorIF
+#===============================================================================
+class EncoderSensorIF:
+	#@abstractmethod
+	def read_delta(self):
+		#Some interrupt-assisted encoders might read multiple steps between
+		#2 calls to EasyEncoder.process_inputs()
+		pass
+
 
 #=EasyEncoder
 #===============================================================================

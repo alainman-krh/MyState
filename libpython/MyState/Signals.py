@@ -27,6 +27,8 @@ class SigAbstract:
 
 #==Signal classes: Concrete
 #===============================================================================
+class SigDirect(SigAbstract): #A plain signal
+	TYPE = "SIG"
 class SigSet(SigAbstract):
 	TYPE = "SET"
 	def __init__(self, section, id, val, iochan:IOChanIF=None):
