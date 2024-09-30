@@ -1,8 +1,7 @@
 #demos\NeoPixelControl_HomeAnalog\HAL_Macropad.py: Hardware Abstraction Layer
 #-------------------------------------------------------------------------------
 from MyState.Predefined.Buttons import EasyButton_SignalPressRel as KPButton
-from MyState.CtrlInputs.Buttons import Profiles, ButtonSensorIF
-from MyState.Predefined.RotEncoders import EasyEncoder_Incr
+from MyState.CtrlInputs.Buttons import Profiles
 from MyState.SigTools import SignalListenerIF
 from CtrlInputWrap.Buttons import ButtonSensorDIO
 from rotaryio import IncrementalEncoder
@@ -37,20 +36,20 @@ class KeypadElement:
 		KEYPAD_NPX[self.idx] = value
 
 
-#==RotaryEncoder_Delta
+#==IncrEncoderSensor
 #===============================================================================
-class EncoderSense:
-	"""Generic rotaryio wrapper to get back difference in position between current and last"""
-	def __init__(self, sense:IncrementalEncoder, handler:EasyEncoder_Incr, scale=1):
+from MyState.CtrlInputs.RotEncoders import EncoderSensorIF
+class IncrEncoderSensor(EncoderSensorIF):
+	"""Wraps `rotaryio.IncrementalEncoder`"""
+	def __init__(self, sense:IncrementalEncoder, scale=1):
 		self.sense = sense
-		self.handler = handler #Ref mostly for convenience
 		self.scale = -scale #IncrementalEncoder positions decrease in clockwise direction.
 		self.poslast = 0
-		self.pos_getdelta() #Zero out postition
+		self.read_delta() #Read to zero out initial postition
 
-	def pos_getdelta(self):
-		"""From last time checked?"""
+	def read_delta(self):
+		"""From last time checked"""
 		pos = self.sense.position #Assuming encoder rolls over??
-		delta = pos - self.poslast #Can be larger than 1
+		delta = pos - self.poslast #Magnitude can be >1 if multiple clicks processed between calls.
 		self.poslast = pos
 		return delta*self.scale

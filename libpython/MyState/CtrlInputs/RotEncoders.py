@@ -22,8 +22,9 @@ class EasyEncoder:
 	        is used with multiple buttons.
 	"""
 	#Finite State Machine (FSM) controlling interations with buttons
-	def __init__(self, id=None):
+	def __init__(self, id=None, encsense:EncoderSensorIF=None):
 		self.id = id
+		self.encsense = encsense
 
 #User-facing event handlers (optional/application-dependent)
 #-------------------------------------------------------------------------------
@@ -33,11 +34,12 @@ class EasyEncoder:
 
 #Process inputs (and trigger events)
 #-------------------------------------------------------------------------------
-	def process_withinputs(self, state_delta):
+	def process_withinputs(self, delta_accrued): #delta_accrued: since last call
 		"""Provide inputs explicitly"""
-		sig_change = (state_delta != 0) #FSM signal
+		sig_change = (delta_accrued != 0) #FSM signal
 		if sig_change:
-			self.handle_change(self.id, state_delta)
+			self.handle_change(self.id, delta_accrued)
 
 	def process_inputs(self):
-		raise Exception("TODO")
+		delta_accrued = self.encsense.read_delta() #`.encsense` must be specified to call.
+		self.process_withinputs(delta_accrued)

@@ -1,7 +1,7 @@
 #demos\NeoPixelControl_HomeAnalog\PhyController.py
 #-------------------------------------------------------------------------------
 from StateDef import STATEBLK_CFG, STATEBLK_MAIN, MYSTATE, StateBlock
-from MyState.Signals import SigAbstract, SigUpdate, SigToggle
+from MyState.Signals import SigAbstract, SigUpdate, SigToggle, SigIncrement
 from MyState.SigTools import SignalListenerIF
 from HAL_Macropad import KeypadElement
 
@@ -66,5 +66,8 @@ class PhyState(SignalListenerIF):
 		elif "press_room1" == sig.id:
 			self.active_area = "room1"
 			MYSTATE.signal_process(self.sig_lighttoggle["room1"])
-		#"KPpot"
+		elif "change_KPenc" == sig.id:
+			ctrlid = self.active_area + ".level"
+			sig = SigIncrement("Main", ctrlid, sig.val)
+			MYSTATE.signal_process(sig)
 PHYSTATE = PhyState()

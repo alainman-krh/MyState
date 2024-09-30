@@ -2,9 +2,9 @@
 #-------------------------------------------------------------------------------
 from StateDef import MYSTATE #To initialize settings
 from PhyController import RefreshAgent, PHYSTATE
-from HAL_Macropad import KeypadElement, EncoderSense, KEYPAD_ENCODER
-from MyState.Predefined.RotEncoders import EasyEncoder_Incr
-from MyState.Signals import SigSet, SigGet, SigIncrement
+from HAL_Macropad import KeypadElement, IncrEncoderSensor, KEYPAD_ENCODER
+from MyState.Predefined.RotEncoders import EasyEncoder_Signal
+from MyState.Signals import SigSet
 
 
 #==Main configuration
@@ -14,11 +14,9 @@ KPSWITCHES = {
 	"room1": KeypadElement(1, "room1", PHYSTATE, "KP"),
 }
 #Context dependent. SigIncrement will be changed:
-KPKNOB = EncoderSense(KEYPAD_ENCODER,
-	#TODO: Find a way to scale by 1 when pressing down
-	EasyEncoder_Incr(MYSTATE, SigIncrement("Main", "kitchen.level", 0)), scale = 5
+KPKNOB = EasyEncoder_Signal("KPenc",
+	IncrEncoderSensor(KEYPAD_ENCODER, scale=5), PHYSTATE, "KP"
 )
-#KPKNOB = EncoderSense(KEYPAD_ENCODER, EasyEncoder_Incr(MYSTATE, SigIncrement("Main", "NOCONN")))
 
 
 #==Global declarations
@@ -28,10 +26,10 @@ ragent = RefreshAgent(KPSWITCHES)
 
 #==Main code entry
 #===============================================================================
-print("HELLO10")
+print("HELLO12")
 MYSTATE.signal_process(SigSet("Main", "kitchen.level", 5))
 MYSTATE.signal_process(SigSet("Main", "room1.level", 100))
 while True:
 	for sw in KPSWITCHES.values():
 		sw.btn.process_inputs()
-	KPKNOB.handler.process_withinputs(KPKNOB.pos_getdelta())
+	KPKNOB.process_inputs()
