@@ -2,8 +2,6 @@
 #-------------------------------------------------------------------------------
 from MyState.Main import StateRoot, StateBlock
 from MyState.FieldPresets import BFLD_Toggle, BFLD_Percent_Int, BGRP_RGB
-from MyState.SigTools import SignalListenerIF
-from MyState.Signals import SigAbstract, SigDirect, SigToggle
 
 STATEBLK_CFG = StateBlock("CFG", [
 	BGRP_RGB("kitchen", dflt=(255,255,255)),
@@ -17,24 +15,6 @@ STATEBLK_MAIN = StateBlock("Main", [
 ])
 
 MYSTATE = StateRoot([STATEBLK_CFG, STATEBLK_MAIN])
-
-class PhyController(SignalListenerIF): #In charge of physical interface
-	def __init__(self):
-		self.active_area = "NoneYet"
-		self.sig_lighttoggle = { #Cache signal objects
-			"kitchen": SigToggle("Main", "kitchen.enabled"),
-			"room1": SigToggle("Main", "room1.enabled"),
-		}
-
-	def signal_process(self, sig:SigAbstract):
-		if "press_kitchen" == sig.id:
-			self.active_area = "kitchen"
-			MYSTATE.signal_process(self.sig_lighttoggle["kitchen"])
-		elif "press_room1" == sig.id:
-			self.active_area = "room1"
-			MYSTATE.signal_process(self.sig_lighttoggle["room1"])
-PHYCTRL = PhyController()
-
 
 sigstr = """
 SET CFG:kitchen.(R,G,B) (240,180,0)

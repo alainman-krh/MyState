@@ -4,10 +4,10 @@ from MyState.Predefined.Buttons import EasyButton_SignalPressRel as KPButton
 from MyState.CtrlInputs.Buttons import Profiles, ButtonSensorIF
 from MyState.Predefined.RotEncoders import EasyEncoder_Incr
 from MyState.SigTools import SignalListenerIF
+from CtrlInputWrap.Buttons import ButtonSensorDIO
 from rotaryio import IncrementalEncoder
 from neopixel import NeoPixel
 import board, digitalio
-
 r"""HAL layer helping to reduce complexity of interfacing with Adafruit Macropad"""
 
 
@@ -20,21 +20,6 @@ KEYPAD_SENSEPIN_LIST = ( #Pin references only. Does not directly measure input s
 KEYPAD_KEYCOUNT = len(KEYPAD_SENSEPIN_LIST)
 KEYPAD_NPX = NeoPixel(board.NEOPIXEL, KEYPAD_KEYCOUNT) #One per key
 KEYPAD_ENCODER = IncrementalEncoder(board.ENCODER_A, board.ENCODER_B)
-
-
-#==ButtonSensorDIO
-#===============================================================================
-from MyState.CtrlInputs.Buttons import ButtonSensorIF
-class ButtonSensorDIO(ButtonSensorIF):
-	def __init__(self, pin, pull=digitalio.Pull.UP, active_low=False):
-		#Configure pin for sensing:
-		self.btnsense = digitalio.DigitalInOut(pin)
-		self.btnsense.direction = digitalio.Direction.INPUT
-		self.btnsense.pull = pull
-		self.activeval = False if active_low else True
-	def isactive(self):
-		"""Is button active (typ: pressed)?"""
-		return self.btnsense.value == self.activeval
 
 
 #==KeypadElement
