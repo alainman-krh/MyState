@@ -2,7 +2,8 @@
 #-------------------------------------------------------------------------------
 from StateDef import MYSTATE #To initialize settings
 from PhyController import RefreshAgent, PHYSTATE
-from HAL_Macropad import KeypadElement, IncrEncoderSensor, KEYPAD_ENCODER
+from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
+from CtrlInputWrap.RotEncoders import EncoderSensorRIO
 from MyState.Predefined.RotEncoders import EasyEncoder_Signal
 from MyState.Signals import SigSet
 
@@ -10,13 +11,10 @@ from MyState.Signals import SigSet
 #==Main configuration
 #===============================================================================
 KPSWITCHES = {
-	"kitchen": KeypadElement(0, "kitchen", PHYSTATE, "KP"),
-	"room1": KeypadElement(1, "room1", PHYSTATE, "KP"),
+	"kitchen": KeypadElement(PHYSTATE, "KP", "kitchen", idx=0),
+	"room1": KeypadElement(PHYSTATE, "KP", "room1", idx=1),
 }
-#Context dependent. SigIncrement will be changed:
-KPKNOB = EasyEncoder_Signal("KPenc",
-	IncrEncoderSensor(KEYPAD_ENCODER, scale=5), PHYSTATE, "KP"
-)
+KPKNOB = EasyEncoder_Signal(PHYSTATE, "KP", "KPenc", KEYPAD_ENCODER)
 
 
 #==Global declarations
@@ -26,7 +24,7 @@ ragent = RefreshAgent(KPSWITCHES)
 
 #==Main code entry
 #===============================================================================
-print("HELLO12")
+print("HELLO21")
 MYSTATE.signal_process(SigSet("Main", "kitchen.level", 5))
 MYSTATE.signal_process(SigSet("Main", "room1.level", 100))
 while True:

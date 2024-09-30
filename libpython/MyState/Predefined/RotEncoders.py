@@ -9,7 +9,7 @@ from MyState.Signals import SigIncrement
 #===============================================================================
 class EasyEncoder_Signal(EasyEncoder):
 	"""Emits signals on position change"""
-	def __init__(self, id, encsense:EncoderSensorIF, l:SignalListenerIF, section):
+	def __init__(self, l:SignalListenerIF, section, id, encsense:EncoderSensorIF):
 		super().__init__(id, encsense)
 		self.l =l
 		#Buffer signal to avoid re-creating:

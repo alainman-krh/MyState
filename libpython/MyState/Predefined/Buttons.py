@@ -9,7 +9,7 @@ from MyState.Signals import SigDirect
 #===============================================================================
 class EasyButton_SignalPressRel(EasyButton):
 	"""Emits signals on press/release only (don't want to make too many objects)"""
-	def __init__(self, id, btnsense:ButtonSensorIF, l:SignalListenerIF, section, profile=Profiles.DEFAULT):
+	def __init__(self, l:SignalListenerIF, section, id, btnsense:ButtonSensorIF, profile=Profiles.DEFAULT):
 		super().__init__(id, btnsense, profile=profile)
 		self.l =l
 		self.sig_press = SigDirect(section, "press_"+id)
