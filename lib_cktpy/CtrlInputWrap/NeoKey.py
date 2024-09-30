@@ -1,4 +1,4 @@
-#CtrlInputWrap/Buttons.py
+#CtrlInputWrap/NeoKey.py
 #-------------------------------------------------------------------------------
 from adafruit_neokey.neokey1x4 import NeoKey1x4
 from MyState.CtrlInputs.Buttons import Profiles, EasyButton
