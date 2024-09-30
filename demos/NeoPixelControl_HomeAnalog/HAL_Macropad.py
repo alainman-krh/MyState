@@ -3,8 +3,8 @@
 from MyState.Predefined.Buttons import EasyButton_SignalPressRel as KPButton
 from MyState.CtrlInputs.Buttons import Profiles
 from MyState.SigTools import SignalListenerIF
-from CtrlInputWrap.RotEncoders import EncoderSensorRIO
-from CtrlInputWrap.Buttons import ButtonSensorDIO
+from CtrlInputWrap.digitalio import ButtonSensorDIO
+from CtrlInputWrap.rotaryio import EncoderSensorRIO
 from neopixel import NeoPixel
 import board, digitalio
 r"""HAL layer helping to reduce complexity of interfacing with Adafruit Macropad"""

@@ -1,4 +1,4 @@
-#CtrlInputWrap/RotEncoders.py
+#CtrlInputWrap/rotaryio.py
 #-------------------------------------------------------------------------------
 from MyState.CtrlInputs.RotEncoders import EncoderSensorIF
 from rotaryio import IncrementalEncoder

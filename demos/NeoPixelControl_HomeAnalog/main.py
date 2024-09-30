@@ -1,9 +1,8 @@
-#demos\NeoPixelControl_HomeAnalog\Main.py
+#demos\NeoPixelControl_HomeAnalog\main.py
 #-------------------------------------------------------------------------------
 from StateDef import MYSTATE #To initialize settings
 from PhyController import RefreshAgent, PHYSTATE
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
-from CtrlInputWrap.RotEncoders import EncoderSensorRIO
 from MyState.Predefined.RotEncoders import EasyEncoder_Signal
 from MyState.Signals import SigSet
 
