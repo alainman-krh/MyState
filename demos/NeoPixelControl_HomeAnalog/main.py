@@ -1,7 +1,7 @@
 #demos\NeoPixelControl_HomeAnalog\main.py
 #-------------------------------------------------------------------------------
 from StateDef import MYSTATE #To initialize settings
-from PhyController import PhyController
+from IFaceDef_Macropad import PhyController
 from MyState.Signals import SigSet
 
 
@@ -19,7 +19,7 @@ CTRLPAD = PhyController(KPMAP_SWITCHES)
 
 #==Main code entry
 #===============================================================================
-print("HELLO23")
+print("HELLO24")
 #Pre-configure state:
 MYSTATE.process_signal(SigSet("Main", "kitchen.level", 5))
 MYSTATE.process_signal(SigSet("Main", "room1.level", 100))

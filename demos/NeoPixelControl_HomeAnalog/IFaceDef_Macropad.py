@@ -1,14 +1,10 @@
-#demos\NeoPixelControl_HomeAnalog\PhyController.py
+#demos\NeoPixelControl_HomeAnalog\IFaceDef_Macropad.py
 #-------------------------------------------------------------------------------
 from StateDef import STATEBLK_CFG, STATEBLK_MAIN, MYSTATE, StateBlock
 from MyState.Signals import SigAbstract, SigUpdate, SigToggle, SigIncrement
 from MyState.SigTools import SignalListenerIF
 from MyState.Predefined.RotEncoders import EasyEncoder_Signal
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
-
-r"""TODO:
-- RENAME: #IFaceDef_Macropad
-"""
 
 
 #==PhyController: 
