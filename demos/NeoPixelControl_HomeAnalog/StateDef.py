@@ -1,7 +1,7 @@
 #demos\NeoPixelControl_HomeAnalog\StateDef.py
 #-------------------------------------------------------------------------------
-from MyState.Main import StateRoot, StateBlock
 from MyState.FieldPresets import BFLD_Toggle, BFLD_Percent_Int, BGRP_RGB
+from MyState.Main import StateBlock, ListenerRoot
 
 STATEBLK_CFG = StateBlock("CFG", [
 	BGRP_RGB("kitchen", dflt=(255,255,255)),
@@ -14,7 +14,8 @@ STATEBLK_MAIN = StateBlock("Main", [
 	BFLD_Percent_Int("room1.level"),
 ])
 
-MYSTATE = StateRoot([STATEBLK_CFG, STATEBLK_MAIN])
+#Signal entry point for anything wanting to control this device (ex: PC/other uController, ...):
+MYSTATE = ListenerRoot([STATEBLK_CFG, STATEBLK_MAIN])
 
 sigstr = """
 SET CFG:kitchen.(R,G,B) (240,180,0)

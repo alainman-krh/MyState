@@ -22,9 +22,9 @@ for line in sigstr.splitlines():
 		print(sig.serialize())
 
 
-print("\nTest signal_process()")
+print("\nTest process_signal()")
 #-------------------------------------------------------------------------------
-from MyState.Main import StateRoot, StateBlock
+from MyState.Main import ListenerRoot, StateBlock
 from MyState.FieldPresets import BFLD_Toggle, BFLD_Percent_Int, BGRP_RGB
 
 STATEBLK_CFG = StateBlock("CFG", [
@@ -38,7 +38,7 @@ STATEBLK_MAIN = StateBlock("Main", [
 	BFLD_Percent_Int("room1.level"),
 ])
 
-MYSTATE = StateRoot([STATEBLK_CFG, STATEBLK_MAIN])
+MYSTATE = ListenerRoot([STATEBLK_CFG, STATEBLK_MAIN])
 
 siglist = [
 	SigToggle("Main", "kitchen.enabled"),
@@ -49,4 +49,4 @@ siglist = [
 	SigUpdate("CFG"), #This will cause something to print.
 ]
 for sig in siglist:
-	MYSTATE.signal_process(sig, update_now=True)
+	MYSTATE.process_signal(sig, update_now=True)

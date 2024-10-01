@@ -2,7 +2,7 @@
 #-------------------------------------------------------------------------------
 from MyState.CtrlInputs.Buttons import Profiles, EasyButton, ButtonSensorIF
 from MyState.SigTools import SignalListenerIF
-from MyState.Signals import SigDirect
+from MyState.Signals import SigEvent
 
 
 #=Convenient implementations of ::EasyButton
@@ -12,10 +12,9 @@ class EasyButton_SignalPressRel(EasyButton):
 	def __init__(self, l:SignalListenerIF, section, id, btnsense:ButtonSensorIF, profile=Profiles.DEFAULT):
 		super().__init__(id, btnsense, profile=profile)
 		self.l =l
-		self.sig_press = SigDirect(section, "press_"+id)
-		self.sig_release = SigDirect(section, "release_"+id)
-
+		self.sig_press = SigEvent(section, id+".press")
+		self.sig_release = SigEvent(section, id+".release")
 	def handle_press(self, id):
-		self.l.signal_process(self.sig_press)
+		self.l.process_signal(self.sig_press)
 	def handle_release(self, id):
-		self.l.signal_process(self.sig_release)
+		self.l.process_signal(self.sig_release)

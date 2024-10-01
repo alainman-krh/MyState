@@ -25,7 +25,7 @@ class EasyNeoKey_1x4:
 		for b in self.btns:
 			b:EasyButton
 			isactive = self._physcan_ispressed(b.id)
-			b.process_withinputs(isactive)
+			b.process_giveninputs(isactive)
 		return
 
 #Last line

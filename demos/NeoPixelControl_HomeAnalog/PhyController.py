@@ -3,37 +3,61 @@
 from StateDef import STATEBLK_CFG, STATEBLK_MAIN, MYSTATE, StateBlock
 from MyState.Signals import SigAbstract, SigUpdate, SigToggle, SigIncrement
 from MyState.SigTools import SignalListenerIF
-from HAL_Macropad import KeypadElement
+from MyState.Predefined.RotEncoders import EasyEncoder_Signal
+from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
+
+r"""TODO:
+- RENAME: #IFaceDef_Macropad
+"""
 
 
-#==RefreshAgent: Handles refreshing device when its state updates
+#==PhyController: 
 #===============================================================================
-class RefreshAgent(SignalListenerIF):
-	"""Refreshes state after it gets updated (SigUpdate)"""
-	def __init__(self, switch_d):
-		self.switch_d = switch_d
+class PhyController(SignalListenerIF):
+	"""Manages state of physical control panel (vs core device function: MYSTATE).
+	Also: Handles refreshing device on state `.update()`.
+	"""
+	def __init__(self, map_switches):
+		self.keymap = {}
+		for (btnidx, area) in map_switches.items():
+			self.keymap[area] = KeypadElement(self, "KP", area, idx=btnidx)
+		self.encknob = EasyEncoder_Signal(self, "KP", "KPenc", KEYPAD_ENCODER)
+		self.area_active = "NoneYet"
+		self._build_object_cache()
+		#Register to observe state changes (callback to .update()):
 		for blk in (STATEBLK_CFG, STATEBLK_MAIN):
 			blk:StateBlock
-			blk.listener_add(self)
+			blk.observers_add(self)
 
+	def _build_object_cache(self):
+		#Try to reduce object creation/garbage collection
+		self.strmap_roomenabled = {}
+		self.strmap_roomlevel = {}
+		for area in self.keymap.keys():
+			self.strmap_roomenabled[area] = area+".enabled"
+			self.strmap_roomlevel[area] = area+".level"
+		self.sig_lighttoggle = SigToggle("Main", "") #id/room not specified
+		self.sig_kpenc = SigIncrement("Main", "", 0)
+
+	#Synchronizing macropad with MYSTATE
+#-------------------------------------------------------------------------------
 	def compute_color(self, id_area, color_100):
 		fields_main = STATEBLK_MAIN.field_d
-		scale = (fields_main[id_area + ".level"].val / 100)
-		scale *= fields_main[id_area + ".enabled"].val
+		id_level = self.strmap_roomlevel[id_area]
+		id_enabled = self.strmap_roomenabled[id_area]
+		scale = (fields_main[id_level].val / 100)
+		scale *= fields_main[id_enabled].val
 		return tuple(int(vi*scale) for vi in color_100)
 
 	def update_lights(self):
 		color_100 = (255,255,255) #At full brightness
-
-		for (id_area, sw) in self.switch_d.items():
+		for (id_area, sw) in self.keymap.items():
 			sw:KeypadElement
 			color = self.compute_color(id_area, color_100)
 			sw.pixel_set(color)
 
-	def signal_process(self, sig:SigAbstract):
-		if type(sig) != SigUpdate:
-			return False
-
+	def update(self, sig:SigUpdate):
+		"""Refreshes macropad after MYSTATE gets updated"""
 		sec = None
 		if "CFG" == sig.section:
 			sec:StateBlock = STATEBLK_CFG
@@ -48,26 +72,26 @@ class RefreshAgent(SignalListenerIF):
 			print(f"{id}: {field.val}")
 		return True
 
+	#Processing macropad sense inputs
+#-------------------------------------------------------------------------------
+	def area_setactive(self, newarea):
+		self.area_active = newarea
+		self.sig_lighttoggle.id = self.strmap_roomenabled[newarea]
+		self.sig_kpenc.id = self.strmap_roomlevel[newarea]
 
-#==PhyState: State of physical control panel (vs core device function: MYSTATE)
-#===============================================================================
-class PhyState(SignalListenerIF):
-	def __init__(self):
-		self.active_area = "NoneYet"
-		self.sig_lighttoggle = { #Cache signal objects
-			"kitchen": SigToggle("Main", "kitchen.enabled"),
-			"room1": SigToggle("Main", "room1.enabled"),
-		}
+	def process_signal(self, sig:SigAbstract):
+		if "kitchen.press" == sig.id:
+			self.area_setactive("kitchen") #Updates sig_lighttoggle.id
+			MYSTATE.process_signal(self.sig_lighttoggle)
+		elif "room1.press" == sig.id:
+			self.area_setactive("room1")
+			MYSTATE.process_signal(self.sig_lighttoggle)
+		elif "KPenc.change" == sig.id:
+			self.sig_kpenc.val = sig.val
+			MYSTATE.process_signal(self.sig_kpenc)
 
-	def signal_process(self, sig:SigAbstract):
-		if "press_kitchen" == sig.id:
-			self.active_area = "kitchen"
-			MYSTATE.signal_process(self.sig_lighttoggle["kitchen"])
-		elif "press_room1" == sig.id:
-			self.active_area = "room1"
-			MYSTATE.signal_process(self.sig_lighttoggle["room1"])
-		elif "change_KPenc" == sig.id:
-			ctrlid = self.active_area + ".level"
-			sig = SigIncrement("Main", ctrlid, sig.val)
-			MYSTATE.signal_process(sig)
-PHYSTATE = PhyState()
+	def process_inputs(self): #Triggers `.process_signal()`
+		for sw in self.keymap.values():
+			sw:KeypadElement
+			sw.btn.process_inputs()
+		self.encknob.process_inputs()

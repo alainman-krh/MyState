@@ -18,7 +18,7 @@ class StateBlock(SignalListenerIF):
 	def __init__(self, id, field_list):
 		self.id = id
 		self.field_list_set(field_list)
-		self.listeners = []
+		self.observers = []
 		self.state_valid = True
 
 #-------------------------------------------------------------------------------
@@ -56,22 +56,23 @@ class StateBlock(SignalListenerIF):
 	def state_invalidate(self):
 		self.state_valid = False
 
-	def listener_add(self, l:SignalListenerIF):
-		self.listeners.append(l)
+	def observers_add(self, l:SignalListenerIF):
+		self.observers.append(l)
 
-	def listeners_send(self, sig:SigAbstract):
+#-------------------------------------------------------------------------------
+	def update(self, sig:SigUpdate):
 		wasproc = False
-		for l in self.listeners:
+		for l in self.observers:
 			l:SignalListenerIF
-			wasproc = l.signal_process(sig)
+			wasproc = l.update(sig)
 		return wasproc
 
 #-------------------------------------------------------------------------------
-	def signal_process(self, sig:SigAbstract):
+	def process_signal(self, sig:SigAbstract):
 		wasproc = False
 		T = type(sig)
 		if T is SigUpdate:
-			return self.listeners_send(sig)
+			return self.update(sig)
 		field:StateField_Int = self.field_d.get(sig.id, None)
 		if field is None:
 			return wasproc
@@ -95,33 +96,37 @@ class StateBlock(SignalListenerIF):
 		return wasproc
 
 
-#==StateRoot
+#==ListenerRoot
 #===============================================================================
-class StateRoot(SignalListenerIF):
-	def __init__(self, section_list):
-		self.section_list_set(section_list)
+class ListenerRoot(SignalListenerIF):
+	def __init__(self, listener_list):
+		self.listeners_setlist(listener_list)
 
 #-------------------------------------------------------------------------------
 	def _cache_update(self):
 		"""Updates cache of sub-structures"""
-		self.section_d = {sec.id: sec for sec in self.section_list}
+		self.section_d = {l.id: l for l in self.listeners}
 
-	def section_list_set(self, section_list):
-		self.section_list = section_list
+	def listeners_setlist(self, listener_list):
+		self.listeners = listener_list
+		self.stateblk_list = []
+		for l in self.listeners:
+			if type(l) is StateBlock:
+				self.stateblk_list.append(l)
 		self._cache_update()
 
 #-------------------------------------------------------------------------------
-	def sectionstates_setvalid(self):
-		for sec in self.section_list:
-			sec:StateBlock
-			sec.state_valid = True
+	def stateblocks_setvalid(self):
+		for blk in self.stateblk_list:
+			blk:StateBlock
+			blk.state_valid = True
 
-	def sectionstates_updateinvalid(self):
-		for sec in self.section_list:
-			sec:StateBlock
-			if not sec.state_valid:
-				sig_update = SigUpdate(sec.id, "")
-				sec.signal_process(sig_update)
+	def stateblocks_updateinvalid(self):
+		for blk in self.stateblk_list:
+			blk:StateBlock
+			if not blk.state_valid:
+				sig_update = SigUpdate(blk.id, "")
+				blk.process_signal(sig_update)
 		return
 
 #-------------------------------------------------------------------------------
@@ -132,17 +137,17 @@ class StateRoot(SignalListenerIF):
 			return wasproc
 
 		sec:StateBlock
-		wasproc = sec.signal_process(sig)
+		wasproc = sec.process_signal(sig)
 		if wasproc:
 			sec.state_invalidate()
 		return wasproc
 
-	def signal_process(self, sig:SigAbstract, update_now=True):
+	def process_signal(self, sig:SigAbstract, update_now=True):
 		wasproc = False
 		if update_now:
-			self.sectionstates_setvalid()
+			self.stateblocks_setvalid()
 			wasproc = self._signal_process(sig)
-			self.sectionstates_updateinvalid()
+			self.stateblocks_updateinvalid()
 		else:
 			wasproc = self._signal_process(sig)
 		return wasproc
@@ -152,16 +157,16 @@ class StateRoot(SignalListenerIF):
 		success = True
 		siglist = SigTools.Signal_Deserialize(sig_str, iochan=iochan)
 		for sig in siglist:
-			wasproc = self.signal_process(sig)
+			wasproc = self.process_signal(sig)
 			success &= wasproc
 		return success
 
 	def signal_process_str(self, sig_str:str, update_now=True, iochan:IOChanIF=None):
 		success = False
 		if update_now:
-			self.sectionstates_setvalid()
+			self.stateblocks_setvalid()
 			success = self._signal_process_str(sig_str, iochan=iochan)
-			self.sectionstates_updateinvalid()
+			self.stateblocks_updateinvalid()
 		else:
 			success = self._signal_process_str(sig_str, iochan=iochan)
 		return success
@@ -169,8 +174,8 @@ class StateRoot(SignalListenerIF):
 #-------------------------------------------------------------------------------
 	def signal_process_script(self, script:str):
 		success = True
-		self.sectionstates_setvalid()
+		self.stateblocks_setvalid()
 		for line in script.splitlines():
 			success &= self._signal_process_str(line)
-		self.sectionstates_updateinvalid()
+		self.stateblocks_updateinvalid()
 		return success

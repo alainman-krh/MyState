@@ -1,6 +1,6 @@
 #MyState/SigTools.py
 #-------------------------------------------------------------------------------
-from .Signals import SigAbstract, IOChanIF
+from .Signals import SigAbstract, SigUpdate, IOChanIF
 from . import Signals
 
 MAP_SIGCLS = {sig.TYPE: sig for sig in Signals.SIG_ALL}
@@ -9,7 +9,13 @@ MAP_SIGCLS = {sig.TYPE: sig for sig in Signals.SIG_ALL}
 #===============================================================================
 class SignalListenerIF: #Interface class
 	#@abstractmethod #Doesn't exist
-	def signal_process(self, sig:SigAbstract):
+	def update(self, sig:SigUpdate):
+		"""Returns: `wasproc` (was processed)"""
+		pass
+
+	#@abstractmethod #Doesn't exist
+	def process_signal(self, sig:SigAbstract):
+		"""Returns: `wasproc` (was processed)"""
 		pass
 
 

@@ -103,7 +103,7 @@ class EasyButton:
 
 #Process inputs (and trigger events)
 #-------------------------------------------------------------------------------
-	def process_withinputs(self, isbtnactive):
+	def process_giveninputs(self, isbtnactive):
 		"""Provide inputs explicitly"""
 		self._procfn_activestate(isbtnactive)
 

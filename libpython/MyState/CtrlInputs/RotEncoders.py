@@ -34,7 +34,7 @@ class EasyEncoder:
 
 #Process inputs (and trigger events)
 #-------------------------------------------------------------------------------
-	def process_withinputs(self, delta_accrued): #delta_accrued: since last call
+	def process_giveninputs(self, delta_accrued): #delta_accrued: since last call
 		"""Provide inputs explicitly"""
 		sig_change = (delta_accrued != 0) #FSM signal
 		if sig_change:
@@ -42,4 +42,4 @@ class EasyEncoder:
 
 	def process_inputs(self):
 		delta_accrued = self.encsense.read_delta() #`.encsense` must be specified to call.
-		self.process_withinputs(delta_accrued)
+		self.process_giveninputs(delta_accrued)

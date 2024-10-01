@@ -1,6 +1,6 @@
 #demos\NeoPixelControl_HomeAnalog\HAL_Macropad.py: Hardware Abstraction Layer
 #-------------------------------------------------------------------------------
-from MyState.Predefined.Buttons import EasyButton_SignalPressRel as KPButton
+from MyState.Predefined.Buttons import EasyButton_SignalPressRel
 from MyState.CtrlInputs.Buttons import Profiles
 from MyState.SigTools import SignalListenerIF
 from CtrlInputWrap.digitalio import ButtonSensorDIO
@@ -30,7 +30,7 @@ class KeypadElement:
 		pin = KEYPAD_SENSEPIN_LIST[idx]
 		#Build/configure keysense pins:
 		keysense = ButtonSensorDIO(pin, pull=digitalio.Pull.UP, active_low=True)
-		self.btn = KPButton(l, section, id, keysense, profile)
+		self.btn = EasyButton_SignalPressRel(l, section, id, keysense, profile)
 	def pixel_set(self, value):
 		"""Must be a tuple(R,G,B)"""
 		KEYPAD_NPX[self.idx] = value

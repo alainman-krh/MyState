@@ -27,8 +27,15 @@ class SigAbstract:
 
 #==Signal classes: Concrete
 #===============================================================================
-class SigDirect(SigAbstract): #A plain signal
+class SigEvent(SigAbstract): #Generic signal for an event
 	TYPE = "SIG"
+class SigValue(SigAbstract):
+	TYPE = "SVL"
+	def __init__(self, section, id, val, iochan:IOChanIF=None):
+		#id & val: not optional!
+		super().__init__(section, id, val, iochan)
+	def serialize(self):
+		return f"{self.TYPE} {self.section}:{self.id} {self.val}"
 class SigSet(SigAbstract):
 	TYPE = "SET"
 	def __init__(self, section, id, val, iochan:IOChanIF=None):
@@ -50,4 +57,4 @@ class SigToggle(SigAbstract):
 class SigUpdate(SigAbstract):
 	TYPE = "UPD"
 
-SIG_ALL = (SigSet, SigGet, SigIncrement, SigToggle, SigUpdate)
+SIG_ALL = (SigEvent, SigValue, SigSet, SigGet, SigIncrement, SigToggle, SigUpdate)
