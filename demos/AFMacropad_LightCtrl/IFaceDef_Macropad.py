@@ -1,4 +1,4 @@
-#demos\NeoPixelControl_HomeAnalog\IFaceDef_Macropad.py
+#demos\AFMacropad_LightCtrl\IFaceDef_Macropad.py
 #-------------------------------------------------------------------------------
 from StateDef import STATEBLK_CFG, STATEBLK_MAIN, MYSTATE, StateBlock
 from MyState.Signals import SigAbstract, SigUpdate, SigToggle, SigIncrement

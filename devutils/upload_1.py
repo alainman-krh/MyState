@@ -6,9 +6,9 @@ from os.path import join as joinpath
 #User config
 #-------------------------------------------------------------------------------
 DEST_DRIVE = "E:\\"
-proj = "NeoPixelControl_HomeAnalog"
+proj = "AFMacropad_LightCtrl"
 
 proj = joinpath("demos", proj)
-UploadProj(proj, DEST_DRIVE, refresh_libs=True)
+UploadProj(proj, DEST_DRIVE, refresh_libs=False)
 
 #Last line

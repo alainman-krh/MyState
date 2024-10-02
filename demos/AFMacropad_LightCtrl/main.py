@@ -1,4 +1,4 @@
-#demos\NeoPixelControl_HomeAnalog\main.py
+#demos\AFMacropad_LightCtrl\main.py
 #-------------------------------------------------------------------------------
 from StateDef import MYSTATE #To initialize settings
 from IFaceDef_Macropad import PhyController

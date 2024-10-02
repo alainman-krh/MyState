@@ -1,4 +1,4 @@
-#demos\NeoPixelControl_HomeAnalog\StateDef.py
+#demos\AFMacropad_LightCtrl\StateDef.py
 #-------------------------------------------------------------------------------
 from MyState.FieldPresets import BFLD_Toggle, BFLD_Percent_Int, BGRP_RGB
 from MyState.Main import StateBlock, ListenerRoot

@@ -1,4 +1,4 @@
-#demos\NeoPixelControl_HomeAnalog\HAL_Macropad.py: Hardware Abstraction Layer
+#demos\AFMacropad_LightCtrl\HAL_Macropad.py: Hardware Abstraction Layer
 #-------------------------------------------------------------------------------
 from MyState.Predefined.Buttons import EasyButton_SignalPressRel
 from MyState.CtrlInputs.Buttons import Profiles
