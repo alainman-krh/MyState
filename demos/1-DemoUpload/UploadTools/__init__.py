@@ -1,4 +1,4 @@
-# DevUtilsSupport.py: Support tools for utilities in `devutils`
+# UploadTools.py: Support tools for uploading code to microcontroller
 #-------------------------------------------------------------------------------
 from os.path import join as joinpath
 from os.path import basename, dirname, abspath
@@ -6,7 +6,7 @@ import shutil
 import glob
 
 _THIS_FILE = abspath(__file__); _THIS_DIR = dirname(_THIS_FILE)
-_THIS_REPO = abspath(joinpath(_THIS_DIR, "..", ".."))
+_THIS_REPO = abspath(joinpath(_THIS_DIR, "..", "..", ".."))
 
 SYNC_LIBS = [
 	joinpath("libpython", "MyState"),
