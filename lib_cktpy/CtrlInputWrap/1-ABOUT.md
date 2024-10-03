@@ -2,15 +2,17 @@
 <!----------------------------------------------------------------------------->
 Simplified interaction with buttons, rotary encoders, and other sensors/input devices.
 
-# `CtrlInputWrap.Buttons`
+# `CtrlInputWrap.digitalio`
 <!----------------------------------------------------------------------------->
-State machine (FSM) controlling interations various types of buttons.
-- `CtrlInputWrap.Buttons.EasyNeoKey_1x4`: Interacting with NeoKey 1x4 keypad.
-- TODO: Add more!
+Simplified interface to buttons sensed using `digitalio`.
+
+# `CtrlInputWrap.adafruit_neokey`
+<!----------------------------------------------------------------------------->
+Simplified interface to `EasyNeoKey_1x4` using `EasyButton`/`ButtonSensorIF`.
 
 # `CtrlInputWrap.USBHID_Keyboard`
 <!----------------------------------------------------------------------------->
-Simplified interface to adafruit_hid: keyboard/consumer_control
+Simplified interface to `adafruit_hid`: keyboard/consumer_control
 Example:
 ```python
 from CtrlInputWrap.USBHID_Keyboard import KeysMain, KeysCC, Keycode, CCC
