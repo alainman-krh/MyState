@@ -7,7 +7,7 @@ r"""HACK INFO (Circuit Python 9.1.4)
 - IncrementalEncoder keeps incrementing all the way to +/-maxint ((1<<31)-1).
 - Will roll over to negative values (and vice-versa) - will NOT saturate.
 - HACK: reset .position = 0 after reading. WARN: Might swallow some readings.
-- Hack necessary because Python largeint behaves strangely @ roll-over.
+- Hack preferable because Python largeint behaves strangely @ roll-over.
 """
 
 #==EncoderSensorRIO
