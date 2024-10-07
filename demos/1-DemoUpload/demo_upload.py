@@ -7,6 +7,8 @@ from os.path import join as joinpath
 #-------------------------------------------------------------------------------
 DEST_DRIVE = "E:\\"
 proj = "AFMacropad_LightCtrl"
+#proj = "TestSerial_AFMacropad"
+#proj = "TestSerial_RP2040"
 
 proj = joinpath("demos", proj)
 UploadProj(proj, DEST_DRIVE, refresh_libs=True)
