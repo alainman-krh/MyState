@@ -49,7 +49,7 @@ class PhyController:
 		for id_area in self.keymap.keys():
 			self.roomstate_map[id_area] = RoomConfig(id_area)
 		self.sig_lighttoggle = SigToggle("Main", "") #id/room not specified
-		self.sig_kpenc = SigIncrement("Main", "", 0)
+		self.sig_levelchange = SigIncrement("Main", "", 0)
 
 	#Synchronizing macropad with MYSTATE
 #-------------------------------------------------------------------------------
@@ -90,12 +90,12 @@ class PhyController:
 		self.area_active = id_newarea
 		cfg:RoomConfig = self.roomstate_map[id_newarea]
 		self.sig_lighttoggle.id = cfg.id_enabled
-		self.sig_kpenc.id = cfg.id_level
+		self.sig_levelchange.id = cfg.id_level
 
 	def process_key(self, id_area):
 		self.area_setactive(id_area) #Updates sig_lighttoggle.id
 		MYSTATE.process_signal(self.sig_lighttoggle)
 
 	def process_KPencoder(self, delta):
-		self.sig_kpenc.val = delta
-		MYSTATE.process_signal(self.sig_kpenc)
+		self.sig_levelchange.val = delta
+		MYSTATE.process_signal(self.sig_levelchange)
