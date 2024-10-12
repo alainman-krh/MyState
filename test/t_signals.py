@@ -13,7 +13,7 @@ SET Main:kitchen.level 75
 INC Main:kitchen.level -5
 TOG Main:kitchen.level
 UPD Main
-GET CFG:room1.(R,G,B)
+GET CFG:bedroom1.(R,G,B)
 GET CFG:kitchen.(R,G,B)
 """
 for line in sigstr.splitlines():
@@ -29,13 +29,13 @@ from MyState.FieldPresets import BFLD_Toggle, BFLD_Percent_Int, BGRP_RGB
 
 STATEBLK_CFG = StateBlock("CFG", [
 	BGRP_RGB("kitchen", dflt=(255,255,255)),
-	BGRP_RGB("room1", dflt=(255,255,255)),
+	BGRP_RGB("bedroom1", dflt=(255,255,255)),
 ])
 STATEBLK_MAIN = StateBlock("Main", [
 	BFLD_Toggle("kitchen.enabled"),
 	BFLD_Percent_Int("kitchen.level"),
-	BFLD_Toggle("room1.enabled"),
-	BFLD_Percent_Int("room1.level"),
+	BFLD_Toggle("bedroom1.enabled"),
+	BFLD_Percent_Int("bedroom1.level"),
 ])
 
 MYSTATE = ListenerRoot([STATEBLK_CFG, STATEBLK_MAIN])

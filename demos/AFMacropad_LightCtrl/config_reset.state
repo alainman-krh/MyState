@@ -1,6 +1,20 @@
-SET CFG:kitchen.(R,G,B) (240,180,0)
-SET CFG:room1.(R,G,B) (255,0,0)
-SET Main:kitchen.level 5
+SET CFG:kitchen.(R,G,B) (255,255,255)
+SET CFG:livingroom.(R,G,B) (120,120,240)
+SET CFG:garage.(R,G,B) (240,180,0)
+SET CFG:bedroom1.(R,G,B) (255,0,0)
+SET CFG:bedroom2.(R,G,B) (0,255,0)
+SET CFG:bedroom3.(R,G,B) (0,0,255)
+
+SET Main:kitchen.level 100
 SET Main:kitchen.enabled 1
-SET Main:room1.level 100
-SET Main:room1.enabled 0
+SET Main:livingroom.level 10
+SET Main:kitchen.enabled 1
+SET Main:garage.level 50
+SET Main:garage.enabled 0
+
+SET Main:bedroom1.level 25
+SET Main:bedroom1.enabled 0
+SET Main:bedroom2.level 25
+SET Main:bedroom2.enabled 0
+SET Main:bedroom3.level 25
+SET Main:bedroom3.enabled 0

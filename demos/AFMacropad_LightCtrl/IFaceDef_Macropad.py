@@ -98,8 +98,20 @@ class PhyController(SignalListenerIF):
 		if "kitchen.press" == sig.id:
 			self.area_setactive("kitchen") #Updates sig_lighttoggle.id
 			MYSTATE.process_signal(self.sig_lighttoggle)
-		elif "room1.press" == sig.id:
-			self.area_setactive("room1")
+		elif "livingroom.press" == sig.id:
+			self.area_setactive("livingroom")
+			MYSTATE.process_signal(self.sig_lighttoggle)
+		elif "garage.press" == sig.id:
+			self.area_setactive("garage")
+			MYSTATE.process_signal(self.sig_lighttoggle)
+		elif "bedroom1.press" == sig.id:
+			self.area_setactive("bedroom1")
+			MYSTATE.process_signal(self.sig_lighttoggle)
+		elif "bedroom2.press" == sig.id:
+			self.area_setactive("bedroom2")
+			MYSTATE.process_signal(self.sig_lighttoggle)
+		elif "bedroom3.press" == sig.id:
+			self.area_setactive("bedroom3")
 			MYSTATE.process_signal(self.sig_lighttoggle)
 		elif "KPenc.change" == sig.id:
 			self.sig_kpenc.val = sig.val

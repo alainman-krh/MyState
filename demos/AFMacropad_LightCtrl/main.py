@@ -9,7 +9,8 @@ import os
 #==Main configuration
 #===============================================================================
 KPMAP_SWITCHES = { #Mapping for {btnidx => area} (See: StateDef.STATEBLK_MAIN)
-	0: "kitchen", 1: "room1",
+	0: "kitchen", 1: "livingroom", 2: "garage",
+	3: "bedroom1", 4: "bedroom2", 5: "bedroom3",
 }
 FILEPATH_CONFIG = "config_reset.state" #User can set initial state here (list of "SET" commands)
 
@@ -29,6 +30,6 @@ if FILEPATH_CONFIG in os.listdir("/"):
 
 #==Main loop
 #===============================================================================
-print("HELLO21") #DEBUG: Change me to ensure uploaded version matches.
+print("HELLO22") #DEBUG: Change me to ensure uploaded version matches.
 while True:
 	CTRLPAD.process_inputs()
