@@ -1,0 +1,6 @@
+SET CFG:kitchen.(R,G,B) (240,180,0)
+SET CFG:room1.(R,G,B) (255,0,0)
+SET Main:kitchen.level 5
+SET Main:kitchen.enabled 1
+SET Main:room1.level 100
+SET Main:room1.enabled 0

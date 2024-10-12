@@ -29,9 +29,11 @@ class PhyController(SignalListenerIF):
 		#Try to reduce object creation/garbage collection
 		self.strmap_roomenabled = {}
 		self.strmap_roomlevel = {}
+		self.strmap_roomcolor = {}
 		for area in self.keymap.keys():
 			self.strmap_roomenabled[area] = area+".enabled"
 			self.strmap_roomlevel[area] = area+".level"
+			self.strmap_roomcolor[area] = (area+".R", area+".G", area+".B")
 		self.sig_lighttoggle = SigToggle("Main", "") #id/room not specified
 		self.sig_kpenc = SigIncrement("Main", "", 0)
 
@@ -46,12 +48,18 @@ class PhyController(SignalListenerIF):
 		return tuple(int(vi*scale) for vi in color_100)
 
 	def update_lights(self):
-		color_100 = (255,255,255) #At full brightness
+		fields_cfg = STATEBLK_CFG.field_d
+		color_100 = [255, 255, 255] #At full brightness
 		for (id_area, sw) in self.keymap.items():
+			idRGB = self.strmap_roomcolor[id_area]
+			for (i, id) in enumerate(idRGB): #Get individual RGB values
+				color_100[i] = fields_cfg[id].val
 			sw:KeypadElement
 			color = self.compute_color(id_area, color_100)
 			sw.pixel_set(color)
 
+	#Refreshing macropad when state data changes
+#-------------------------------------------------------------------------------
 	def update(self, sig:SigUpdate):
 		"""Refreshes macropad after MYSTATE gets updated"""
 		sec = None
@@ -63,12 +71,12 @@ class PhyController(SignalListenerIF):
 		else:
 			return False
 
-		#Just print out for now:
-		for (id, field) in sec.field_d.items():
-			print(f"{id}: {field.val}")
-		return True
+		if False: #Debug code: Print state
+			for (id, field) in sec.field_d.items():
+				print(f"{id}: {field.val}")
+			return True
 
-	#Processing macropad sense inputs
+	#Processing macropad sense inputs (Main state control bypasses this)
 #-------------------------------------------------------------------------------
 	def area_setactive(self, newarea):
 		self.area_active = newarea

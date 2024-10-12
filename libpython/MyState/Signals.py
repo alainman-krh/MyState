@@ -54,6 +54,7 @@ class SigIncrement(SigAbstract): #Increment
 		return f"{self.TYPE} {self.section}:{self.id} {self.val}"
 class SigToggle(SigAbstract):
 	TYPE = "TOG"
+#TODO: Have update disable
 class SigUpdate(SigAbstract):
 	TYPE = "UPD"
 

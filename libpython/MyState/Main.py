@@ -5,6 +5,7 @@ from .Signals import SigUpdate, SigSet, SigGet, SigIncrement, SigToggle
 from .Primitives import StateField_Int, FieldGroup
 from .SigTools import SignalListenerIF
 from . import SigTools
+import io
 
 r"""Info relating to state
 Consider: 'SET Main:kitchen.enabled 1'
@@ -179,3 +180,12 @@ class ListenerRoot(SignalListenerIF):
 			success &= self._signal_process_str(line)
 		self.stateblocks_updateinvalid()
 		return success
+
+#-------------------------------------------------------------------------------
+	def script_load(self, filepath:str):
+		success = True
+		self.stateblocks_setvalid()
+		with io.open(filepath, "r") as fio:
+			for line in fio.readlines():
+				success &= self._signal_process_str(line)
+		self.stateblocks_updateinvalid()
