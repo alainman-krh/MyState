@@ -7,6 +7,26 @@ from MyState.Predefined.RotEncoders import EasyEncoder_Signal
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
 
 
+#==RoomConfig: 
+#===============================================================================
+class RoomConfig:
+	"""Caches references to state data
+	(simplifies code; create fewer temp strings/garbage collection)"""
+	def __init__(self, id_area):
+		#NOTE: Ids cached for sending signals:
+		#ALT: Allow ref to StateField_Int instead of just id string???
+		self.id_enabled = id_area + ".enabled"
+		self.id_level = id_area + ".level"
+
+		fields_main = STATEBLK_CFG.field_d
+		self.R = fields_main[id_area + ".R"]
+		self.G = fields_main[id_area + ".G"]
+		self.B = fields_main[id_area + ".B"]
+		fields_main = STATEBLK_MAIN.field_d
+		self.enabled = fields_main[self.id_enabled]
+		self.level = fields_main[self.id_level]
+
+
 #==PhyController: 
 #===============================================================================
 class PhyController(SignalListenerIF):
@@ -15,8 +35,8 @@ class PhyController(SignalListenerIF):
 	"""
 	def __init__(self, map_switches):
 		self.keymap = {}
-		for (btnidx, area) in map_switches.items():
-			self.keymap[area] = KeypadElement(self, "KP", area, idx=btnidx)
+		for (btnidx, id_area) in map_switches.items():
+			self.keymap[id_area] = KeypadElement(self, "KP", id_area, idx=btnidx)
 		self.encknob = EasyEncoder_Signal(self, "KP", "KPenc", KEYPAD_ENCODER)
 		self.area_active = "NoneYet"
 		self._build_object_cache()
@@ -27,35 +47,25 @@ class PhyController(SignalListenerIF):
 
 	def _build_object_cache(self):
 		#Try to reduce object creation/garbage collection
-		self.strmap_roomenabled = {}
-		self.strmap_roomlevel = {}
-		self.strmap_roomcolor = {}
-		for area in self.keymap.keys():
-			self.strmap_roomenabled[area] = area+".enabled"
-			self.strmap_roomlevel[area] = area+".level"
-			self.strmap_roomcolor[area] = (area+".R", area+".G", area+".B")
+		self.roomstate_map = {}
+		for id_area in self.keymap.keys():
+			self.roomstate_map[id_area] = RoomConfig(id_area)
 		self.sig_lighttoggle = SigToggle("Main", "") #id/room not specified
 		self.sig_kpenc = SigIncrement("Main", "", 0)
 
 	#Synchronizing macropad with MYSTATE
 #-------------------------------------------------------------------------------
-	def compute_color(self, id_area, color_100):
-		fields_main = STATEBLK_MAIN.field_d
-		id_level = self.strmap_roomlevel[id_area]
-		id_enabled = self.strmap_roomenabled[id_area]
-		scale = (fields_main[id_level].val / 100)
-		scale *= fields_main[id_enabled].val
+	def compute_color(self, cfg:RoomConfig):
+		color_100 = (cfg.R.val, cfg.G.val, cfg.B.val) #At full brightness
+		scale = (cfg.level.val / 100)
+		scale *= cfg.enabled.val
 		return tuple(int(vi*scale) for vi in color_100)
 
 	def update_lights(self):
-		fields_cfg = STATEBLK_CFG.field_d
-		color_100 = [255, 255, 255] #At full brightness
 		for (id_area, sw) in self.keymap.items():
-			idRGB = self.strmap_roomcolor[id_area]
-			for (i, id) in enumerate(idRGB): #Get individual RGB values
-				color_100[i] = fields_cfg[id].val
 			sw:KeypadElement
-			color = self.compute_color(id_area, color_100)
+			cfg = self.roomstate_map[id_area]
+			color = self.compute_color(cfg)
 			sw.pixel_set(color)
 
 	#Refreshing macropad when state data changes
@@ -78,10 +88,11 @@ class PhyController(SignalListenerIF):
 
 	#Processing macropad sense inputs (Main state control bypasses this)
 #-------------------------------------------------------------------------------
-	def area_setactive(self, newarea):
-		self.area_active = newarea
-		self.sig_lighttoggle.id = self.strmap_roomenabled[newarea]
-		self.sig_kpenc.id = self.strmap_roomlevel[newarea]
+	def area_setactive(self, id_newarea):
+		self.area_active = id_newarea
+		cfg:RoomConfig = self.roomstate_map[id_newarea]
+		self.sig_lighttoggle.id = cfg.id_enabled
+		self.sig_kpenc.id = cfg.id_level
 
 	def process_signal(self, sig:SigAbstract):
 		if "kitchen.press" == sig.id:
