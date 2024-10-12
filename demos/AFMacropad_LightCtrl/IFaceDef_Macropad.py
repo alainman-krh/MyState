@@ -2,8 +2,6 @@
 #-------------------------------------------------------------------------------
 from StateDef import STATEBLK_CFG, STATEBLK_MAIN, MYSTATE, StateBlock
 from MyState.Signals import SigAbstract, SigUpdate, SigToggle, SigIncrement
-from MyState.SigTools import SignalListenerIF
-from MyState.Predefined.RotEncoders import EasyEncoder_Signal
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
 
 
@@ -29,15 +27,15 @@ class RoomConfig:
 
 #==PhyController: 
 #===============================================================================
-class PhyController(SignalListenerIF):
+class PhyController:
 	"""Manages state of physical control panel (vs core device function: MYSTATE).
 	Also: Handles refreshing device on state `.update()`.
 	"""
 	def __init__(self, map_switches):
 		self.keymap = {}
 		for (btnidx, id_area) in map_switches.items():
-			self.keymap[id_area] = KeypadElement(self, "KP", id_area, idx=btnidx)
-		self.encknob = EasyEncoder_Signal(self, "KP", "KPenc", KEYPAD_ENCODER)
+			self.keymap[id_area] = KeypadElement(idx=btnidx)
+		self.encknob = KEYPAD_ENCODER
 		self.area_active = "NoneYet"
 		self._build_object_cache()
 		#Register to observe state changes (callback to .update()):
@@ -94,31 +92,10 @@ class PhyController(SignalListenerIF):
 		self.sig_lighttoggle.id = cfg.id_enabled
 		self.sig_kpenc.id = cfg.id_level
 
-	def process_signal(self, sig:SigAbstract):
-		if "kitchen.press" == sig.id:
-			self.area_setactive("kitchen") #Updates sig_lighttoggle.id
-			MYSTATE.process_signal(self.sig_lighttoggle)
-		elif "livingroom.press" == sig.id:
-			self.area_setactive("livingroom")
-			MYSTATE.process_signal(self.sig_lighttoggle)
-		elif "garage.press" == sig.id:
-			self.area_setactive("garage")
-			MYSTATE.process_signal(self.sig_lighttoggle)
-		elif "bedroom1.press" == sig.id:
-			self.area_setactive("bedroom1")
-			MYSTATE.process_signal(self.sig_lighttoggle)
-		elif "bedroom2.press" == sig.id:
-			self.area_setactive("bedroom2")
-			MYSTATE.process_signal(self.sig_lighttoggle)
-		elif "bedroom3.press" == sig.id:
-			self.area_setactive("bedroom3")
-			MYSTATE.process_signal(self.sig_lighttoggle)
-		elif "KPenc.change" == sig.id:
-			self.sig_kpenc.val = sig.val
-			MYSTATE.process_signal(self.sig_kpenc)
+	def process_key(self, id_area):
+		self.area_setactive(id_area) #Updates sig_lighttoggle.id
+		MYSTATE.process_signal(self.sig_lighttoggle)
 
-	def process_inputs(self): #Triggers `.process_signal()`
-		for sw in self.keymap.values():
-			sw:KeypadElement
-			sw.btn.process_inputs()
-		self.encknob.process_inputs()
+	def process_KPencoder(self, delta):
+		self.sig_kpenc.val = delta
+		MYSTATE.process_signal(self.sig_kpenc)

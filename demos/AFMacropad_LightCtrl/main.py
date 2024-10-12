@@ -2,7 +2,7 @@
 #-------------------------------------------------------------------------------
 from StateDef import MYSTATE #To initialize settings
 from IFaceDef_Macropad import PhyController
-from MyState.Signals import SigSet, SigUpdate
+from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
 import os
 
 
@@ -30,6 +30,16 @@ if FILEPATH_CONFIG in os.listdir("/"):
 
 #==Main loop
 #===============================================================================
-print("HELLO22") #DEBUG: Change me to ensure uploaded version matches.
+print("HELLO24") #DEBUG: Change me to ensure uploaded version matches.
 while True:
-	CTRLPAD.process_inputs()
+	#Process button inputs:
+	for (id_area, key) in CTRLPAD.keymap.items():
+		key:KeypadElement
+		key_event = key.events.get()
+		if key_event:
+			if key_event.pressed:
+				CTRLPAD.process_key(id_area)
+
+	delta = CTRLPAD.encknob.read_delta() #Resets position to 0 every time.
+	if delta != 0:
+		CTRLPAD.process_KPencoder(delta)
