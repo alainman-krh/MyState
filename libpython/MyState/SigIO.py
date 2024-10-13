@@ -11,7 +11,7 @@ class SigIOIF:
 	r"""Standard way to interface with IO com channels used for signalling
 	(Split out from SigIOController for readability purposes)
 
-	IMPORTANT: Implementation should provide a reasonable timeout value.
+	IMPORTANT: Implementation should provide a reasonable timeout value for .readline_block().
 	"""
 	#@abstractmethod #Doesn't exist
 	def readline_noblock(self):
@@ -70,7 +70,7 @@ class SigIOController(SigIOIF):
 		self.write(msgval); self.write("\n")
 		return True #wasproc
 
-	def _signal_process_str(self, msgstr:str):
+	def _process_signal_str(self, msgstr:str):
 		success = True
 		siglist = Signal_Deserialize(msgstr)
 		for sig in siglist: #A single signal can have multiple components (ex: R,G,B)
@@ -91,7 +91,7 @@ class SigIOController(SigIOIF):
 			msgstr = self.readline_noblock()
 			if msgstr is None:
 				break #Done
-			success &= self._signal_process_str(msgstr)
+			success &= self._process_signal_str(msgstr)
 		return success
 
 
@@ -115,6 +115,7 @@ class SigIOScript(SigIOController):
 		"""Set the script from a string"""
 		self.setscript_lines(script_str.splitlines())
 
+#Implement SigIOIF interface:
 #-------------------------------------------------------------------------------
 	def readline_noblock(self):
 		if self.idx >= len(self.scriptlines):
