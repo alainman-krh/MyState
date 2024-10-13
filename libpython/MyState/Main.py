@@ -1,6 +1,6 @@
 #MyState/State.py
 #-------------------------------------------------------------------------------
-from .Signals import SigAbstract, IOChanIF
+from .Signals import SigAbstract
 from .Signals import SigUpdate, SigSet, SigGet, SigIncrement, SigToggle
 from .Primitives import StateField_Int, FieldGroup
 from .SigTools import SignalListenerIF
@@ -90,7 +90,7 @@ class StateBlock(SignalListenerIF):
 		elif T is SigGet:
 			v = field.valget()
 			print(f"DBG/ {sig.id}: {v}")
-			#TODO: reply to sig.iochan if exists
+			#TODO: IGNORE - need special get function!
 		else:
 			return wasproc
 		wasproc = True
@@ -154,22 +154,22 @@ class ListenerRoot(SignalListenerIF):
 		return wasproc
 
 #-------------------------------------------------------------------------------
-	def _signal_process_str(self, sig_str:str, iochan:IOChanIF=None):
+	def _signal_process_str(self, sig_str:str):
 		success = True
-		siglist = SigTools.Signal_Deserialize(sig_str, iochan=iochan)
+		siglist = SigTools.Signal_Deserialize(sig_str)
 		for sig in siglist:
 			wasproc = self.process_signal(sig)
 			success &= wasproc
 		return success
 
-	def signal_process_str(self, sig_str:str, update_now=True, iochan:IOChanIF=None):
+	def signal_process_str(self, sig_str:str, update_now=True):
 		success = False
 		if update_now:
 			self.stateblocks_setvalid()
-			success = self._signal_process_str(sig_str, iochan=iochan)
+			success = self._signal_process_str(sig_str)
 			self.stateblocks_updateinvalid()
 		else:
-			success = self._signal_process_str(sig_str, iochan=iochan)
+			success = self._signal_process_str(sig_str)
 		return success
 
 #-------------------------------------------------------------------------------

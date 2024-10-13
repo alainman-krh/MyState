@@ -1,6 +1,6 @@
 #MyState/SigTools.py
 #-------------------------------------------------------------------------------
-from .Signals import SigAbstract, SigUpdate, IOChanIF
+from .Signals import SigAbstract, SigUpdate
 from . import Signals
 
 MAP_SIGCLS = {sig.TYPE: sig for sig in Signals.SIG_ALL}
@@ -64,7 +64,7 @@ def _idsplit(idstr:str, valstr:str):
 
 #==API
 #===============================================================================
-def Signal_Deserialize(s:str, iochan:IOChanIF=None):
+def Signal_Deserialize(s:str):
 	"""Supports command strings with multiple parameters.
 	ex: `SET CFG:kitchen.(R,G,B) (240,180,0)`
 
@@ -95,5 +95,5 @@ def Signal_Deserialize(s:str, iochan:IOChanIF=None):
 		idstr = idcomp[1]
 
 	(v_id, v_val) = _idsplit(idstr, valstr)
-	siglist = (sigcls(section, id, val, iochan) for (id, val) in zip(v_id, v_val))
+	siglist = (sigcls(section, id, val) for (id, val) in zip(v_id, v_val))
 	return siglist
