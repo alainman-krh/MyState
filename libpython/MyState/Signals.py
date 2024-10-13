@@ -1,6 +1,8 @@
 #MyState/Signals.py
 #-------------------------------------------------------------------------------
 
+MSG_SIGACK = "ACK" #For blocking transmissions (if not returning SigValue)
+
 
 #==Signal classes: Base
 #===============================================================================

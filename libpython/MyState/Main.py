@@ -4,7 +4,7 @@ from .Signals import SigAbstract
 from .Signals import SigUpdate, SigSet, SigGet, SigIncrement, SigToggle
 from .Primitives import StateField_Int, FieldGroup
 from .SigTools import SignalListenerIF
-from . import SigTools
+from .SigIO import SigIOScript
 import io
 
 r"""Info relating to state
@@ -65,7 +65,8 @@ class StateBlock(SignalListenerIF):
 		wasproc = False
 		for l in self.observers:
 			l:SignalListenerIF
-			wasproc = l.update(sig)
+			result = (l.update(sig) == True) #Safety: Might not return bool
+			wasproc |= result #If anything updates - that's good
 		return wasproc
 
 #-------------------------------------------------------------------------------
@@ -107,6 +108,7 @@ class ListenerRoot(SignalListenerIF):
 	def _cache_update(self):
 		"""Updates cache of sub-structures"""
 		self.section_d = {l.id: l for l in self.listeners}
+		self.sig_update = SigUpdate("", "")
 
 	def listeners_setlist(self, listener_list):
 		self.listeners = listener_list
@@ -115,6 +117,16 @@ class ListenerRoot(SignalListenerIF):
 			if type(l) is StateBlock:
 				self.stateblk_list.append(l)
 		self._cache_update()
+
+#-------------------------------------------------------------------------------
+	def update(self, sig:SigUpdate):
+		"""Update all state blocks"""
+		wasproc = False
+		for blk in self.stateblk_list:
+			blk:StateBlock
+			self.sig_update.id = blk.id
+			wasproc &= blk.update(self.sig_update) #All should update
+		return wasproc
 
 #-------------------------------------------------------------------------------
 	def stateblocks_setvalid(self):
@@ -127,7 +139,7 @@ class ListenerRoot(SignalListenerIF):
 			blk:StateBlock
 			if not blk.state_valid:
 				sig_update = SigUpdate(blk.id, "")
-				blk.process_signal(sig_update)
+				blk.update(sig_update)
 		return
 
 #-------------------------------------------------------------------------------
@@ -154,38 +166,14 @@ class ListenerRoot(SignalListenerIF):
 		return wasproc
 
 #-------------------------------------------------------------------------------
-	def _signal_process_str(self, sig_str:str):
-		success = True
-		siglist = SigTools.Signal_Deserialize(sig_str)
-		for sig in siglist:
-			wasproc = self.process_signal(sig)
-			success &= wasproc
-		return success
-
-	def signal_process_str(self, sig_str:str, update_now=True):
-		success = False
-		if update_now:
-			self.stateblocks_setvalid()
-			success = self._signal_process_str(sig_str)
-			self.stateblocks_updateinvalid()
-		else:
-			success = self._signal_process_str(sig_str)
-		return success
-
-#-------------------------------------------------------------------------------
-	def signal_process_script(self, script:str):
-		success = True
-		self.stateblocks_setvalid()
-		for line in script.splitlines():
-			success &= self._signal_process_str(line)
-		self.stateblocks_updateinvalid()
-		return success
-
-#-------------------------------------------------------------------------------
 	def script_load(self, filepath:str):
-		success = True
+		scriptlines = None
 		self.stateblocks_setvalid()
+
 		with io.open(filepath, "r") as fio:
-			for line in fio.readlines():
-				success &= self._signal_process_str(line)
+			scriptlines = fio.readlines()
+		script = SigIOScript(self, scriptlines)
+		success = script.process_signals()
+
 		self.stateblocks_updateinvalid()
+		return success
