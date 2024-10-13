@@ -1,4 +1,4 @@
-#demos\AFMacropad_LightCtrl\HAL_Macropad.py: Hardware Abstraction Layer
+#demos\LightCtrlMP_AFMacropad\HAL_Macropad.py: Hardware Abstraction Layer
 #-------------------------------------------------------------------------------
 from CtrlInputWrap.rotaryio import EncoderSensorRIO
 from neopixel import NeoPixel

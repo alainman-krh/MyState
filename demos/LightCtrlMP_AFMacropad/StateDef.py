@@ -1,4 +1,4 @@
-#demos\AFMacropad_LightCtrl\StateDef.py
+#demos\LightCtrlMP_AFMacropad\StateDef.py
 #-------------------------------------------------------------------------------
 from MyState.FieldPresets import BFLD_Toggle, BFLD_Percent_Int, BGRP_RGB
 from MyState.Main import StateBlock, ListenerRoot

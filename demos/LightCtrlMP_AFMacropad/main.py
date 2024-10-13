@@ -1,4 +1,4 @@
-#demos\AFMacropad_LightCtrl\main.py
+#demos\LightCtrlMP_AFMacropad\main.py
 #-------------------------------------------------------------------------------
 from StateDef import MYSTATE #To initialize settings
 from IFaceDef_Macropad import PhyController
@@ -30,7 +30,7 @@ if FILEPATH_CONFIG in os.listdir("/"):
 
 #==Main loop
 #===============================================================================
-print("HELLO24") #DEBUG: Change me to ensure uploaded version matches.
+print("HELLO22") #DEBUG: Change me to ensure uploaded version matches.
 while True:
 	#Process button inputs:
 	for (id_area, key) in CTRLPAD.keymap.items():

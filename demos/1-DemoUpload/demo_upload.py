@@ -6,7 +6,7 @@ from os.path import join as joinpath
 #User config
 #-------------------------------------------------------------------------------
 DEST_DRIVE = "E:\\"
-proj = "AFMacropad_LightCtrl"
+proj = "LightCtrlMP_AFMacropad"
 #proj = "TestSerial_AFMacropad"
 #proj = "TestSerial_RP2040"
 

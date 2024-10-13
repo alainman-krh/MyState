@@ -1,4 +1,4 @@
-#demos\AFMacropad_LightCtrl\IFaceDef_Macropad.py
+#demos\LightCtrlMP_AFMacropad\IFaceDef_Macropad.py
 #-------------------------------------------------------------------------------
 from StateDef import STATEBLK_CFG, STATEBLK_MAIN, MYSTATE, StateBlock
 from MyState.Signals import SigAbstract, SigUpdate, SigToggle, SigIncrement
