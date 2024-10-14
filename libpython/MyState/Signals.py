@@ -51,5 +51,10 @@ class SigToggle(SigAbstract):
 #TODO: Have update disable
 class SigUpdate(SigAbstract):
 	TYPE = "UPD"
+class SigDump(SigAbstract):
+	"""Dump state ("DMP ROOT": dumps all)"""
+	TYPE = "DMP"
+	def serialize(self):
+		return f"{self.TYPE} {self.section}"
 
-SIG_ALL = (SigEvent, SigValue, SigSet, SigGet, SigIncrement, SigToggle, SigUpdate)
+SIG_ALL = (SigEvent, SigValue, SigSet, SigGet, SigIncrement, SigToggle, SigUpdate, SigDump)

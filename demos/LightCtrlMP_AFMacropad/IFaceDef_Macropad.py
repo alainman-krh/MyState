@@ -5,21 +5,31 @@ from MyState.Signals import SigAbstract, SigUpdate, SigToggle, SigIncrement
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
 
 
+#==Constants
+#===============================================================================
+SCALE_ENCTICK2LEVEL = 5 #Sensitivity: encoder tick to light level
+SCALE_ENCTICK2COLOR = 15 #Sensitivity: encoder tick to color level
+
+
 #==RoomConfig: 
 #===============================================================================
 class RoomConfig:
 	"""Caches references to state data
-	(simplifies code; create fewer temp strings/garbage collection)"""
+	(simplifies math/code; create fewer temp strings/garbage collection)"""
 	def __init__(self, id_area):
 		#NOTE: Ids cached for sending signals:
 		#ALT: Allow ref to StateField_Int instead of just id string???
 		self.id_enabled = id_area + ".enabled"
 		self.id_level = id_area + ".level"
+		self.id_R = id_area + ".R"
+		self.id_G = id_area + ".G"
+		self.id_B = id_area + ".B"
 
-		fields_main = STATEBLK_CFG.field_d
-		self.R = fields_main[id_area + ".R"]
-		self.G = fields_main[id_area + ".G"]
-		self.B = fields_main[id_area + ".B"]
+		#Field references for accessing state data:
+		fields_cfg = STATEBLK_CFG.field_d
+		self.R = fields_cfg[self.id_R]
+		self.G = fields_cfg[self.id_G]
+		self.B = fields_cfg[self.id_B]
 		fields_main = STATEBLK_MAIN.field_d
 		self.enabled = fields_main[self.id_enabled]
 		self.level = fields_main[self.id_level]
@@ -50,6 +60,7 @@ class PhyController:
 			self.roomstate_map[id_area] = RoomConfig(id_area)
 		self.sig_lighttoggle = SigToggle("Main", "") #id/room not specified
 		self.sig_levelchange = SigIncrement("Main", "", 0)
+		self.sig_colorchange_vect = tuple(SigIncrement("CFG", "", 0) for i in range(3))
 
 	#Synchronizing macropad with MYSTATE
 #-------------------------------------------------------------------------------
@@ -70,17 +81,17 @@ class PhyController:
 #-------------------------------------------------------------------------------
 	def update(self, sig:SigUpdate):
 		"""Refreshes macropad after MYSTATE gets updated"""
-		sec = None
+		section = None
 		if "CFG" == sig.section:
-			sec:StateBlock = STATEBLK_CFG
+			section:StateBlock = STATEBLK_CFG
 		elif "Main" == sig.section:
-			sec:StateBlock = STATEBLK_MAIN
-			self.update_lights()
+			section:StateBlock = STATEBLK_MAIN
 		else:
 			return False
+		self.update_lights()
 
 		if False: #Debug code: Print state
-			for (id, field) in sec.field_d.items():
+			for (id, field) in section.field_d.items():
 				print(f"{id}: {field.val}")
 			return True
 
@@ -91,11 +102,25 @@ class PhyController:
 		cfg:RoomConfig = self.roomstate_map[id_newarea]
 		self.sig_lighttoggle.id = cfg.id_enabled
 		self.sig_levelchange.id = cfg.id_level
+		self.sig_colorchange_vect[0].id = cfg.id_R
+		self.sig_colorchange_vect[1].id = cfg.id_G
+		self.sig_colorchange_vect[2].id = cfg.id_B
 
 	def process_key(self, id_area):
 		self.area_setactive(id_area) #Updates sig_lighttoggle.id
 		MYSTATE.process_signal(self.sig_lighttoggle)
 
 	def process_KPencoder(self, delta):
-		self.sig_levelchange.val = delta
+		self.sig_levelchange.val = delta*SCALE_ENCTICK2LEVEL
 		MYSTATE.process_signal(self.sig_levelchange)
+
+	def process_I2Cencoder(self, idx, delta):
+		if idx not in range(4):
+			return #Can't don anything.
+		if 3 == idx:
+			self.sig_levelchange.val = delta*SCALE_ENCTICK2LEVEL
+			MYSTATE.process_signal(self.sig_levelchange)
+		else:
+			sig = self.sig_colorchange_vect[idx]
+			sig.val = delta*SCALE_ENCTICK2COLOR
+			MYSTATE.process_signal(sig)

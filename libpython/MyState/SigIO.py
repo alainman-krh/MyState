@@ -1,7 +1,7 @@
 #MyState/SigIO.py
 #-------------------------------------------------------------------------------
 from .Signals import SigUpdate, SigSet, SigGet, SigIncrement, SigToggle
-from .Signals import SigAbstract, SigValue, MSG_SIGACK
+from .Signals import SigAbstract, SigValue, SigDump, MSG_SIGACK
 from .SigTools import SignalListenerIF, Signal_Deserialize
 
 
@@ -58,6 +58,13 @@ class SigIOController(SigIOIF):
 		return result
 
 #-------------------------------------------------------------------------------
+	def _signal_dump(self, sig:SigDump):
+		#.listener actually needs to be a `ListenerRoot` - or a StateControllerIF maybe (TODO)???
+		msg_list = self.listener.state_getdump(sig.section)
+		for msg in msg_list:
+			self.write(msg); self.write("\n")
+		return True #wasproc
+
 	def _signal_get(self, sig:SigAbstract):
 		val = 0 #TODO: Call self.listener.GET here!!!
 		if val is None:
@@ -76,6 +83,8 @@ class SigIOController(SigIOIF):
 		for sig in siglist: #A single signal can have multiple components (ex: R,G,B)
 			if type(sig) is SigGet:
 				wasproc = self._signal_get(sig)
+			elif type(sig) is SigDump:
+				wasproc = self._signal_dump(sig)
 			else:
 				wasproc = self.listener.process_signal(sig)
 				#Acknowledge signal even if not detected:

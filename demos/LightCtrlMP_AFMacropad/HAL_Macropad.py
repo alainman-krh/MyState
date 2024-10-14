@@ -15,7 +15,7 @@ KEYPAD_SENSEPIN_LIST = ( #Pin references only. Does not directly measure input s
 )
 KEYPAD_KEYCOUNT = len(KEYPAD_SENSEPIN_LIST)
 KEYPAD_NPX = NeoPixel(board.NEOPIXEL, KEYPAD_KEYCOUNT) #One per key
-KEYPAD_ENCODER = EncoderSensorRIO(board.ENCODER_A, board.ENCODER_B, scale=5)
+KEYPAD_ENCODER = EncoderSensorRIO(board.ENCODER_A, board.ENCODER_B)
 
 
 #==KeypadElement

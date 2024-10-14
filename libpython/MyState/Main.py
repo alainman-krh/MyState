@@ -1,7 +1,7 @@
 #MyState/State.py
 #-------------------------------------------------------------------------------
-from .Signals import SigAbstract
 from .Signals import SigUpdate, SigSet, SigGet, SigIncrement, SigToggle
+from .Signals import SigAbstract, SigValue, SigDump
 from .Primitives import StateField_Int, FieldGroup
 from .SigTools import SignalListenerIF
 from .SigIO import SigIOScript
@@ -59,6 +59,27 @@ class StateBlock(SignalListenerIF):
 
 	def observers_add(self, l:SignalListenerIF):
 		self.observers.append(l)
+
+#-------------------------------------------------------------------------------
+	def state_getdump(self):
+		"""Returns a list of `SigValue` message strings representing state."""
+		result = []
+		sigbuf = SigValue(self.id, "", 0)
+		for f in self.field_list:
+			if type(f) is FieldGroup:
+				grp:FieldGroup = f
+				subfid_list = tuple(subf.id for subf in grp.field_list)
+				subf_str = ",".join(subfid_list)
+				sigbuf.id = f"{grp.id}.({subf_str})"
+				val_list = tuple(str(subf.val) for subf in grp.field_list)
+				val_str = ",".join(val_list)
+				sigbuf.val = f"({val_str})"
+				result.append(sigbuf.serialize())
+			else:
+				f:StateField_Int
+				sigbuf.id = f.id; sigbuf.val = f.val
+				result.append(sigbuf.serialize())
+		return result
 
 #-------------------------------------------------------------------------------
 	def update(self, sig:SigUpdate):
@@ -143,26 +164,41 @@ class ListenerRoot(SignalListenerIF):
 		return
 
 #-------------------------------------------------------------------------------
-	def _signal_process(self, sig:SigAbstract):
+	def state_getdump(self, section):
+		stateblk_list = []
+		stateblk = self.section_d.get(section, None)
+		if ("ROOT" == section): #Meant for "ListenerRoot" (this)
+			stateblk_list = self.stateblk_list #All state blocks
+		elif stateblk != None:
+			stateblk_list = [stateblk]
+
+		result = []
+		for blk in stateblk_list:
+			blk:StateBlock
+			result.extend(blk.state_getdump())
+		return result
+
+#-------------------------------------------------------------------------------
+	def _process_signal_core(self, sig:SigAbstract):
 		wasproc = False
-		sec = self.section_d.get(sig.section, None)
-		if sec is None:
+		section = self.section_d.get(sig.section, None)
+		if section is None:
 			return wasproc
 
-		sec:StateBlock
-		wasproc = sec.process_signal(sig)
+		section:StateBlock
+		wasproc = section.process_signal(sig)
 		if wasproc:
-			sec.state_invalidate()
+			section.state_invalidate()
 		return wasproc
 
 	def process_signal(self, sig:SigAbstract, update_now=True):
 		wasproc = False
 		if update_now:
 			self.stateblocks_setvalid()
-			wasproc = self._signal_process(sig)
+			wasproc = self._process_signal_core(sig)
 			self.stateblocks_updateinvalid()
 		else:
-			wasproc = self._signal_process(sig)
+			wasproc = self._process_signal_core(sig)
 		return wasproc
 
 #-------------------------------------------------------------------------------
