@@ -148,27 +148,4 @@ class SigIOScript(SigIOController):
 	def write(self, msgstr): #Not really supported
 		return
 
-
-#==SigIO_USBHost
-#===============================================================================
-from .USBSerial import USBSerialIn_Nonblocking
-from sys import stdin, stdout
-class SigIO_USBHost(SigIOController):
-	"""Read a script from a string"""
-	def __init__(self, listener:SignalListenerIF):
-		super().__init__(listener)
-		self.istream_nonblock = USBSerialIn_Nonblocking()
-
-#Implement SigIOIF interface:
-#-------------------------------------------------------------------------------
-	def readline_noblock(self):
-		return self.istream_nonblock.readline()
-
-	def readline_block(self):
-		return stdin.readline()
-
-	def write(self, msgstr):
-		stdout.write(msgstr)
-
-
 #Last line

@@ -1,15 +1,15 @@
 #demos\LightCtrlMP_AFMacropad\main.py
 #-------------------------------------------------------------------------------
-from StateDef import MYSTATE #To initialize settings
-from IFaceDef_Macropad import PhyController
+from StateDef import MYSTATE #Defines device state
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
-from MyState.SigIO import SigIO_USBHost
+from IFaceDef_Macropad import PhyController
+from EasyCktIO.USBSerial import SigIO_USBHost
 import os
 
 
 #==Main configuration
 #===============================================================================
-USEOPT_ROTENCODERS = True
+USEOPT_ROTENCODERS = True #Disable if no NeoRotary 4 connected through I2C.
 KPMAP_SWITCHES = { #Mapping for {btnidx => area} (See: StateDef.STATEBLK_MAIN)
 	0: "kitchen", 1: "livingroom", 2: "garage",
 	3: "bedroom1", 4: "bedroom2", 5: "bedroom3",
@@ -37,9 +37,6 @@ if FILEPATH_CONFIG in os.listdir("/"):
 #==Main loop
 #===============================================================================
 print("HELLO22") #DEBUG: Change me to ensure uploaded version matches.
-state = MYSTATE.state_getdump("ROOT")
-for line in state:
-	print(line)
 
 while True:
 	HOSTIO.process_signals() #Host might send signals through USB serial
@@ -50,12 +47,14 @@ while True:
 		key_event = key.events.get()
 		if key_event:
 			if key_event.pressed:
-				CTRLPAD.process_key(id_area)
+				CTRLPAD.process_keypress(id_area)
 
+	#Process built-in rotary encoder knob:
 	delta = CTRLPAD.encknob.read_delta() #Resets position to 0 every time.
 	if delta != 0:
 		CTRLPAD.process_KPencoder(delta)
 
+	#Process external I2C encoder knobs (NeoRotary 4) - mostly to control RGB:
 	if USEOPT_ROTENCODERS:
 		for (i, enc) in enumerate(ENCODERS_I2C):
 			delta = enc.read_delta() #Relative to last time read.

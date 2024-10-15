@@ -1,7 +1,10 @@
-#MyState/USBSerial.py: Tools to access serial over USB more easily
+#EasyCktIO/USBSerial.py: Tools to access serial over USB more easily
 #-------------------------------------------------------------------------------
+from MyState.SigTools import SignalListenerIF
+from MyState.SigIO import SigIOController
 from usb_cdc import console as HOSTSERIAL_IN
 from array import array
+from sys import stdin, stdout
 
 
 #==USBSerialIn_Nonblocking
@@ -43,3 +46,23 @@ class USBSerialIn_Nonblocking():
 		if len(self.linebuf) > 0:
 			return self.linebuf.pop(0) #Not super efficient.
 		return None
+
+
+#==SigIO_USBHost
+#===============================================================================
+class SigIO_USBHost(SigIOController):
+	"""Read a script from a string"""
+	def __init__(self, listener:SignalListenerIF):
+		super().__init__(listener)
+		self.istream_nonblock = USBSerialIn_Nonblocking()
+
+#Implement SigIOIF interface:
+#-------------------------------------------------------------------------------
+	def readline_noblock(self):
+		return self.istream_nonblock.readline()
+
+	def readline_block(self):
+		return stdin.readline()
+
+	def write(self, msgstr):
+		stdout.write(msgstr)

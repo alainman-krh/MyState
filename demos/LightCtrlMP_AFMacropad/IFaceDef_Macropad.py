@@ -95,7 +95,7 @@ class PhyController:
 				print(f"{id}: {field.val}")
 			return True
 
-	#Processing macropad sense inputs (Main state control bypasses this)
+	#Processing macropad sense inputs (Indirection before affecting `MYSTATE`)
 #-------------------------------------------------------------------------------
 	def area_setactive(self, id_newarea):
 		self.area_active = id_newarea
@@ -106,7 +106,7 @@ class PhyController:
 		self.sig_colorchange_vect[1].id = cfg.id_G
 		self.sig_colorchange_vect[2].id = cfg.id_B
 
-	def process_key(self, id_area):
+	def process_keypress(self, id_area):
 		self.area_setactive(id_area) #Updates sig_lighttoggle.id
 		MYSTATE.process_signal(self.sig_lighttoggle)
 
