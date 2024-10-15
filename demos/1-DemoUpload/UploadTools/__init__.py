@@ -10,7 +10,6 @@ _THIS_REPO = abspath(joinpath(_THIS_DIR, "..", "..", ".."))
 
 SYNC_LIBS = [
 	joinpath("libpython", "MyState"),
-	joinpath("lib_cktpy", "CtrlInputWrap"),
 	joinpath("lib_cktpy", "EasyCktIO"),
 ]
 

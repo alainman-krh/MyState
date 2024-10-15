@@ -1,6 +1,6 @@
 #demos\LightCtrlMP_AFMacropad\HAL_Macropad.py: Hardware Abstraction Layer
 #-------------------------------------------------------------------------------
-from CtrlInputWrap.rotaryio import EncoderSensorRIO
+from EasyCktIO.rotaryio import EncoderSensorRIO
 from neopixel import NeoPixel
 import keypad #Detects press/release events!
 import board

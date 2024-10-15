@@ -1,7 +1,9 @@
-#CtrlInputWrap/rotaryio.py
+#EasyCktIO/seesaw.py
 #-------------------------------------------------------------------------------
 from MyState.CtrlInputs.RotEncoders import EncoderSensorIF
-from rotaryio import IncrementalEncoder
+from adafruit_seesaw.rotaryio import IncrementalEncoder as IEncoderSS
+from adafruit_seesaw.seesaw import Seesaw
+
 
 r"""HACK INFO (Circuit Python 9.1.4)
 - IncrementalEncoder keeps incrementing all the way to +/-maxint ((1<<31)-1).
@@ -10,20 +12,27 @@ r"""HACK INFO (Circuit Python 9.1.4)
 - Hack preferable because Python largeint behaves strangely @ roll-over.
 """
 
+
+#==Constants
+#===============================================================================
+DEFAULTI2CADDR_SEESAW = 0x49 #Default I2C address of Seesaw on "NeoRotary 4" (AF #5752)
+
+
 #==EncoderSensorRIO
 #===============================================================================
 class EncoderSensorRIO(EncoderSensorIF):
-	"""Wraps `rotaryio.IncrementalEncoder`."""
-	def __init__(self, pin_a, pin_b, scale=1):
-		self.sense = IncrementalEncoder(pin_a, pin_b)
-		self.scale = -scale #IncrementalEncoder positions decrease in clockwise direction.
+	"""Wraps `adafruit_seesaw.rotaryio.IncrementalEncoder`."""
+	def __init__(self, seesaw:Seesaw, idx=0, scale=1):
+		self.sense = IEncoderSS(seesaw, idx) #Won't actually use this
+		self.seesaw = seesaw
+		self.idx = idx
+		self.scale = scale #Seesaw/IncrementalEncoder positions INCREASES in clockwise direction.
 		self.read_delta() #Read to zero out initial postition
 
 	def read_delta(self):
 		"""From last time checked (resets .position)"""
+		#NOTE: NOT using `.sense:IEncoderSS`: No way to read delta. Reading directly from .seesaw.
+
 		#Magnitude can be >1 if multiple clicks processed between calls:
-		delta = self.sense.position
-		if delta != 0:
-			self.sense.position = 0 #Hack: rolls over @ (1<<31)-1 (never saturates).
-			#Don't reset position unless delta found (less likely to miss a click)
+		delta = self.seesaw.encoder_delta(self.idx) #Assuming handles rollover correctly (not verified)
 		return delta*self.scale

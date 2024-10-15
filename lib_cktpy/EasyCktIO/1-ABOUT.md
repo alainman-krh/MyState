@@ -1,21 +1,21 @@
-## `CtrlInputWrap`
+## `EasyCktIO`
 <!----------------------------------------------------------------------------->
 Simplified interaction with buttons, rotary encoders, and other sensors/input devices.
 
-# `CtrlInputWrap.digitalio`
+# `EasyCktIO.digitalio`
 <!----------------------------------------------------------------------------->
 Simplified interface to buttons sensed using `digitalio`.
 
-# `CtrlInputWrap.adafruit_neokey`
+# `EasyCktIO.adafruit_neokey`
 <!----------------------------------------------------------------------------->
 Simplified interface to `EasyNeoKey_1x4` using `EasyButton`/`ButtonSensorIF`.
 
-# `CtrlInputWrap.USBHID_Keyboard`
+# `EasyCktIO.USBHID_Keyboard`
 <!----------------------------------------------------------------------------->
 Simplified interface to `adafruit_hid`: keyboard/consumer_control
 Example:
 ```python
-from CtrlInputWrap.USBHID_Keyboard import KeysMain, KeysCC, Keycode, CCC
+from EasyCktIO.USBHID_Keyboard import KeysMain, KeysCC, Keycode, CCC
 from time import sleep
 
 key1 = KeysMain(Keycode.KEYPAD_ENTER) #Object that sends keypad "enter" code

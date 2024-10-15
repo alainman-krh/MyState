@@ -1,6 +1,6 @@
 #demos\LightCtrlMP_AFMacropad\Opt_RotEncoder.py
 #-------------------------------------------------------------------------------
-from CtrlInputWrap.seesaw import EncoderSensorRIO, DEFAULTI2CADDR_SEESAW
+from EasyCktIO.seesaw import EncoderSensorRIO, DEFAULTI2CADDR_SEESAW
 from adafruit_seesaw.seesaw import Seesaw
 from adafruit_seesaw.neopixel import NeoPixel as NeoPixelSS
 #import adafruit_seesaw.digitalio

@@ -1,4 +1,4 @@
-#CtrlInputWrap/USBHID_Keyboard.py: Simplified interface to adafruit_hid: keyboard/consumer_control
+#EasyCktIO/USBHID_Keyboard.py: Simplified interface to adafruit_hid: keyboard/consumer_control
 #-------------------------------------------------------------------------------
 from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.consumer_control_code import ConsumerControlCode as CCC #Convenience for module user
