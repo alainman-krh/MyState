@@ -5,6 +5,11 @@ from .Signals import SigAbstract, SigValue, SigDump, MSG_SIGACK
 from .SigTools import SignalListenerIF, Signal_Deserialize
 
 
+#==Constants
+#===============================================================================
+MSGDUMP_EOT = "DMP EOT"
+
+
 #==SigIOIF
 #===============================================================================
 class SigIOIF:
@@ -65,6 +70,7 @@ class SigIOController(SigIOIF):
 		msg_list = self.listener.state_getdump(sig.section)
 		for msg in msg_list:
 			self.write(msg); self.write("\n")
+		self.write(MSGDUMP_EOT); self.write("\n")
 		return True #wasproc
 
 	def _signal_get(self, sig:SigAbstract):
