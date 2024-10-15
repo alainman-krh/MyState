@@ -19,7 +19,6 @@ class SigIOIF:
 		pass
 
 	def readline_block(self):
-		#Returns SigValue (return for SigGet), True for simple Signal ack, or None on error/timeout
 		pass
 
 	def write(self, msgstr):
@@ -37,6 +36,8 @@ class SigIOController(SigIOIF):
 	def send_signal(self, sig:SigAbstract, block=True):
 		"""Send a signal through this IO interface.
 		- block: =False: non-blocking
+
+		Returns SigValue (return for SigGet), True for simple Signal ack, or None on error/timeout
 		"""
 		msgstr = sig.serialize()
 		if not block:
@@ -46,15 +47,16 @@ class SigIOController(SigIOIF):
 		needsval = (type(sig) is SigGet)
 
 		self.write(msgstr)
-		result = self.readline_block() #Might timeout, get bad response, etc
+		ans_str = self.readline_block() #Might timeout, get bad response, etc (must keep going)
+		ans_str = ans_str.strip()
+		ans_sig = Signal_Deserialize(ans_str)
 		if needsval:
-			if type(result) != SigValue:
+			if type(ans_sig) != SigValue:
 				return None #Error
 			else:
-				return result.val
+				return ans_sig.val
 		#Simple ack expected (else: None):
-		if result != True:
-			result = None
+		result = (MSG_SIGACK == ans_str)
 		return result
 
 #-------------------------------------------------------------------------------
@@ -100,6 +102,7 @@ class SigIOController(SigIOIF):
 			msgstr = self.readline_noblock()
 			if msgstr is None:
 				break #Done
+			msgstr = msgstr.strip()
 			success &= self._process_signal_str(msgstr)
 		return success
 
@@ -134,9 +137,32 @@ class SigIOScript(SigIOController):
 		return line
 
 	def readline_block(self):
-		return self.readline_noblock()
+		return None #ACKs not supported in scripts
 
 	def write(self, msgstr): #Not really supported
 		return
+
+
+#==SigIO_USBHost
+#===============================================================================
+from .USBSerial import USBSerialIn_Nonblocking
+from sys import stdin, stdout
+class SigIO_USBHost(SigIOController):
+	"""Read a script from a string"""
+	def __init__(self, listener:SignalListenerIF):
+		super().__init__(listener)
+		self.istream_nonblock = USBSerialIn_Nonblocking()
+
+#Implement SigIOIF interface:
+#-------------------------------------------------------------------------------
+	def readline_noblock(self):
+		return self.istream_nonblock.readline()
+
+	def readline_block(self):
+		return stdin.readline()
+
+	def write(self, msgstr):
+		stdout.write(msgstr)
+
 
 #Last line

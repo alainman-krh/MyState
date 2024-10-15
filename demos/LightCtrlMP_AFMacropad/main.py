@@ -3,7 +3,7 @@
 from StateDef import MYSTATE #To initialize settings
 from IFaceDef_Macropad import PhyController
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
-from MyState.USBSerial import USBSerialIn_Nonblocking
+from MyState.SigIO import SigIO_USBHost
 import os
 
 
@@ -19,7 +19,7 @@ FILEPATH_CONFIG = "config_reset.state" #User can set initial state here (list of
 
 #==Global declarations
 #===============================================================================
-SERIALIN_NOBLK = USBSerialIn_Nonblocking()
+HOSTIO = SigIO_USBHost(MYSTATE)
 CTRLPAD = PhyController(KPMAP_SWITCHES)
 if USEOPT_ROTENCODERS:
 	from Opt_RotEncoder import ENCODERS_I2C
@@ -42,9 +42,7 @@ for line in state:
 	print(line)
 
 while True:
-	usbmsg = SERIALIN_NOBLK.readline()
-	if usbmsg != None:
-		print(usbmsg)
+	HOSTIO.process_signals() #Host might send signals through USB serial
 
 	#Process button inputs:
 	for (id_area, key) in CTRLPAD.keymap.items():
