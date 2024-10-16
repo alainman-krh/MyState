@@ -2,6 +2,7 @@
 #-------------------------------------------------------------------------------
 from StateDef import STATEBLK_CFG, STATEBLK_MAIN, MYSTATE, StateBlock
 from MyState.Signals import SigAbstract, SigUpdate, SigToggle, SigIncrement
+from MyState.SigTools import StateObserverIF
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
 
 
@@ -37,9 +38,9 @@ class RoomConfig:
 
 #==PhyController: 
 #===============================================================================
-class PhyController:
+class PhyController(StateObserverIF):
 	"""Manages state of physical control panel (vs core device function: MYSTATE).
-	Also: Handles refreshing device on state `.update()`.
+	Also: Handles refreshing device on `.handle_update()`.
 	"""
 	def __init__(self, map_switches):
 		self.keymap = {}
@@ -48,7 +49,7 @@ class PhyController:
 		self.encknob = KEYPAD_ENCODER
 		self.area_active = "NoneYet"
 		self._build_object_cache()
-		#Register to observe state changes (callback to .update()):
+		#Register to observe state changes (callback to .handle_update()):
 		for blk in (STATEBLK_CFG, STATEBLK_MAIN):
 			blk:StateBlock
 			blk.observers_add(self)
@@ -79,12 +80,12 @@ class PhyController:
 
 	#Refreshing macropad when state data changes
 #-------------------------------------------------------------------------------
-	def update(self, sig:SigUpdate):
+	def handle_update(self, id_section:str):
 		"""Refreshes macropad after MYSTATE gets updated"""
 		section = None
-		if "CFG" == sig.section:
+		if "CFG" == id_section:
 			section:StateBlock = STATEBLK_CFG
-		elif "Main" == sig.section:
+		elif "Main" == id_section:
 			section:StateBlock = STATEBLK_MAIN
 		else:
 			return False

@@ -5,14 +5,15 @@ from . import Signals
 
 MAP_SIGCLS = {sig.TYPE: sig for sig in Signals.SIG_ALL}
 
-#==SignalListenerIF
+#==StateObserverIF/SignalListenerIF
 #===============================================================================
-class SignalListenerIF: #Interface class
+class StateObserverIF: #Interface class
 	#@abstractmethod #Doesn't exist
-	def update(self, sig:SigUpdate):
+	def handle_update(self, id_section:str):
 		"""Returns: `wasproc` (was processed)"""
 		pass
 
+class SignalListenerIF: #Interface class
 	#@abstractmethod #Doesn't exist
 	def process_signal(self, sig:SigAbstract):
 		"""Returns: `wasproc` (was processed)"""

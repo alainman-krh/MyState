@@ -23,6 +23,8 @@ for line in sigstr.splitlines():
 
 
 print("\nTest process_signal()")
+
+print()
 #-------------------------------------------------------------------------------
 from MyState.Main import ListenerRoot, StateBlock
 from MyState.FieldPresets import BFLD_Toggle, BFLD_Percent_Int, BGRP_RGB
@@ -49,4 +51,4 @@ siglist = [
 	SigUpdate("CFG"), #This will cause something to print.
 ]
 for sig in siglist:
-	MYSTATE.process_signal(sig, update_now=True)
+	MYSTATE.process_signal(sig)

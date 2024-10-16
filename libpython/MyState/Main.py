@@ -3,7 +3,7 @@
 from .Signals import SigUpdate, SigSet, SigGet, SigIncrement, SigToggle
 from .Signals import SigAbstract, SigValue, SigDump
 from .Primitives import StateField_Int, FieldGroup
-from .SigTools import SignalListenerIF
+from .SigTools import StateObserverIF, SignalListenerIF
 from .SigIO import SigIOScript
 import io
 
@@ -20,7 +20,8 @@ class StateBlock(SignalListenerIF):
 		self.id = id
 		self.field_list_set(field_list)
 		self.observers = []
-		self.state_valid = True
+		self.state_valid = False
+		self.autoupdate = True
 
 #-------------------------------------------------------------------------------
 	def _cache_update(self):
@@ -54,11 +55,8 @@ class StateBlock(SignalListenerIF):
 		return result
 
 #-------------------------------------------------------------------------------
-	def state_invalidate(self):
-		self.state_valid = False
-
-	def observers_add(self, l:SignalListenerIF):
-		self.observers.append(l)
+	def observers_add(self, o:StateObserverIF):
+		self.observers.append(o)
 
 #-------------------------------------------------------------------------------
 	def state_getdump(self):
@@ -82,33 +80,46 @@ class StateBlock(SignalListenerIF):
 		return result
 
 #-------------------------------------------------------------------------------
-	def update(self, sig:SigUpdate):
+	def trigger_update(self, force=False):
+		"""Don't call directly. Use .signal_statechange() to respect autoupdate"""
 		wasproc = False
-		for l in self.observers:
-			l:SignalListenerIF
-			result = (l.update(sig) == True) #Safety: Might not return bool
+		if (self.state_valid and (not force)):
+			return wasproc
+		for o in self.observers:
+			o:StateObserverIF
+			result = (o.handle_update(self.id) == True) #Safety: Might not return bool
 			wasproc |= result #If anything updates - that's good
+		self.state_valid = True
 		return wasproc
+
+	def signal_statechange(self):
+		self.state_valid = False
+		if not self.autoupdate:
+			return
+		wasproc = self.trigger_update()
 
 #-------------------------------------------------------------------------------
 	def process_signal(self, sig:SigAbstract):
 		wasproc = False
 		T = type(sig)
 		if T is SigUpdate:
-			return self.update(sig)
+			self.autoupdate = (sig.val != 0)
+			if not self.autoupdate:
+				return True #wasproc... but don't update
+			return self.trigger_update(sig, force=True)
 		field:StateField_Int = self.field_d.get(sig.id, None)
 		if field is None:
 			return wasproc
 
 		if T is SigSet:
 			field.valset(sig.val)
-			self.state_invalidate()
+			self.signal_statechange()
 		elif T is SigIncrement:
 			field.valinc(sig.val)
-			self.state_invalidate()
+			self.signal_statechange()
 		elif T is SigToggle:
 			field.valtoggle()
-			self.state_invalidate()
+			self.signal_statechange()
 		elif T is SigGet:
 			v = field.valget()
 			print(f"DBG/ {sig.id}: {v}")
@@ -140,30 +151,23 @@ class ListenerRoot(SignalListenerIF):
 		self._cache_update()
 
 #-------------------------------------------------------------------------------
-	def update(self, sig:SigUpdate):
+	def stateblocks_setautoupdate(self, val):
+		for blk in self.stateblk_list:
+			blk:StateBlock
+			blk.autoupdate = val
+
+	def stateblocks_triggerupdate(self, force=False):
 		"""Update all state blocks"""
 		wasproc = False
 		for blk in self.stateblk_list:
 			blk:StateBlock
-			self.sig_update.id = blk.id
-			wasproc &= blk.update(self.sig_update) #All should update
+			wasproc &= blk.trigger_update(force=force)
 		return wasproc
 
 #-------------------------------------------------------------------------------
-	def stateblocks_setvalid(self):
-		for blk in self.stateblk_list:
-			blk:StateBlock
-			blk.state_valid = True
+	def state_getfield(self, section):
+		pass
 
-	def stateblocks_updateinvalid(self):
-		for blk in self.stateblk_list:
-			blk:StateBlock
-			if not blk.state_valid:
-				sig_update = SigUpdate(blk.id, "")
-				blk.update(sig_update)
-		return
-
-#-------------------------------------------------------------------------------
 	def state_getdump(self, section):
 		stateblk_list = []
 		stateblk = self.section_d.get(section, None)
@@ -179,7 +183,7 @@ class ListenerRoot(SignalListenerIF):
 		return result
 
 #-------------------------------------------------------------------------------
-	def _process_signal_core(self, sig:SigAbstract):
+	def process_signal(self, sig:SigAbstract):
 		wasproc = False
 		section = self.section_d.get(sig.section, None)
 		if section is None:
@@ -187,29 +191,19 @@ class ListenerRoot(SignalListenerIF):
 
 		section:StateBlock
 		wasproc = section.process_signal(sig)
-		if wasproc:
-			section.state_invalidate()
-		return wasproc
-
-	def process_signal(self, sig:SigAbstract, update_now=True):
-		wasproc = False
-		if update_now:
-			self.stateblocks_setvalid()
-			wasproc = self._process_signal_core(sig)
-			self.stateblocks_updateinvalid()
-		else:
-			wasproc = self._process_signal_core(sig)
 		return wasproc
 
 #-------------------------------------------------------------------------------
-	def script_load(self, filepath:str):
-		scriptlines = None
-		self.stateblocks_setvalid()
-
-		with io.open(filepath, "r") as fio:
-			scriptlines = fio.readlines()
-		script = SigIOScript(self, scriptlines)
-		success = script.process_signals()
-
-		self.stateblocks_updateinvalid()
+	def script_load(self, filepath:str, forceupdate=True):
+		scriptlines = []
+		success = False
+		self.stateblocks_setautoupdate(False)
+		try:
+			with io.open(filepath, "r") as fio:
+				scriptlines = fio.readlines()
+			script = SigIOScript(self, scriptlines)
+			success = script.process_signals()
+			self.stateblocks_triggerupdate(force=forceupdate)
+		finally:
+			self.stateblocks_setautoupdate(True) #TODO: Save/restore state?
 		return success
