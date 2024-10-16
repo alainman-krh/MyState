@@ -107,15 +107,15 @@ class PhyController(StateObserverIF):
 		self.sig_colorchange_vect[1].id = cfg.id_G
 		self.sig_colorchange_vect[2].id = cfg.id_B
 
-	def process_keypress(self, id_area):
+	def filter_keypress(self, id_area):
 		self.area_setactive(id_area) #Updates sig_lighttoggle.id
 		MYSTATE.process_signal(self.sig_lighttoggle)
 
-	def process_KPencoder(self, delta):
+	def filter_KPencoder(self, delta):
 		self.sig_levelchange.val = delta*SCALE_ENCTICK2LEVEL
 		MYSTATE.process_signal(self.sig_levelchange)
 
-	def process_I2Cencoder(self, idx, delta):
+	def filter_I2Cencoder(self, idx, delta):
 		if idx not in range(4):
 			return #Can't don anything.
 		if 3 == idx:
