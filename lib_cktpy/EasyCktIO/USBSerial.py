@@ -6,6 +6,10 @@ from usb_cdc import console as HOSTSERIAL_IN
 from array import array
 from sys import stdin, stdout
 
+r"""ASSUMPTIONS:
+- stdin, stdout are USB-serial input/output streams (not necessarily true).
+"""
+
 
 #==USBSerialIn_Nonblocking
 #===============================================================================
