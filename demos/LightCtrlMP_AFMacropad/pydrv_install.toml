@@ -1,0 +1,13 @@
+[libs]
+dest = [$BOARDROOT]/libs
+files = [
+"$PROJROOT/libpython/X",
+"$PKGROOT/lib_cktpy/Y",
+]
+
+[project]
+dest = [$BOARDROOT]
+files = [
+"$PKGROOT/COOLDEFS",
+"$THISPKG/Y",
+]
