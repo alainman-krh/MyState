@@ -50,7 +50,7 @@ while True:
 	#SIGIO_MACROPAD_UART.process_signals()
 	sig = SIGIO_MACROPAD_UART.read_signal_next()
 	if SigEvent == type(sig):
-		print(sig)
+		print(sig.serialize())
 	elif sig != None:
 		print("Unexpected signal from Macropad.")
 

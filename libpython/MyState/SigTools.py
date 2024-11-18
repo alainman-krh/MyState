@@ -96,5 +96,6 @@ def Signal_Deserialize(s:str):
 		idstr = idcomp[1]
 
 	(v_id, v_val) = _idsplit(idstr, valstr)
-	siglist = (sigcls(section, id, val) for (id, val) in zip(v_id, v_val))
+	#Want concrete list/tuple instead of generator:
+	siglist = tuple(sigcls(section, id, val) for (id, val) in zip(v_id, v_val))
 	return siglist
