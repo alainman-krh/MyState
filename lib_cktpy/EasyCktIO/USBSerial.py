@@ -56,7 +56,7 @@ class USBSerialIn_Nonblocking():
 #===============================================================================
 class SigIO_USBHost(SigIOController):
 	"""Read a script from a string"""
-	def __init__(self, listener:SignalListenerIF):
+	def __init__(self, listener:SignalListenerIF=None):
 		super().__init__(listener)
 		self.istream_nonblock = USBSerialIn_Nonblocking()
 

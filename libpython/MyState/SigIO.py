@@ -33,7 +33,7 @@ class SigIOIF:
 #==SigIOController
 #===============================================================================
 class SigIOController(SigIOIF):
-	def __init__(self, listener:SignalListenerIF):
+	def __init__(self, listener:SignalListenerIF=None):
 		self.listener = listener
 		self.cache_sigval = SigValue("","",0)
 
@@ -53,6 +53,8 @@ class SigIOController(SigIOIF):
 
 		self.write(msgstr)
 		ans_str = self.readline_block() #Might timeout, get bad response, etc (must keep going)
+		if ans_str is None:
+			return None #Error
 		ans_str = ans_str.strip()
 		ans_sig = Signal_Deserialize(ans_str)
 		if needsval:
@@ -102,7 +104,10 @@ class SigIOController(SigIOIF):
 
 #-------------------------------------------------------------------------------
 	def process_signals(self):
-		"""Process any incomming signals"""
+		"""Process any incomming signals
+
+		Requires: `.listener` defined (!= None)
+		"""
 		success = True
 		while True:
 			msgstr = self.readline_noblock()

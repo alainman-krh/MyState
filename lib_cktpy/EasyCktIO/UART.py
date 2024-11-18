@@ -17,10 +17,10 @@ Standard serial baud rates:
 #===============================================================================
 class SigIO_UART(SigIOController):
 	"""Read a script from a string"""
-	def __init__(self, listener:SignalListenerIF, uart:busio.UART, timeoutms_sigio=1_000):
+	def __init__(self, uart:busio.UART, listener:SignalListenerIF=None, timeoutms_sigio=1_000):
 		super().__init__(listener)
 		self.uart = uart
-		#self.uart.timeout=0 ??
+		self.uart.timeout = 0 #Is it wise to change it?? Should we just create UART directly?
 		self.timeoutms_sigio = timeoutms_sigio
 
 #Implement SigIOIF interface:
