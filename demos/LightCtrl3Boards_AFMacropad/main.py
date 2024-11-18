@@ -4,8 +4,7 @@ from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
 from MyState.Main import StateBlock, ListenerRoot
 from EasyCktIO.UART import SigIO_UART
 from MyState.Signals import SigEvent
-import busio
-import board
+import board, busio
 
 r"""ABOUT
 In this configuration, the macropad here is a sort of "dumb" interface that
@@ -18,7 +17,7 @@ On STEMMA-QT:
 
 #==Main configuration
 #===============================================================================
-RX = board.SCL; TX = board.SDA #Yellow/Blue on STEMMA-QT port
+TX = board.SDA; RX = board.SCL #Blue/Yellow on STEMMA-QT port
 
 
 #==Global declarations
@@ -37,7 +36,7 @@ SIG_ENC_CHANGE = SigEvent("KP", "ENCCHANGE", 0) #Value: Delta of the encoder
 
 #==Main loop
 #===============================================================================
-print("HELLO-Dumb macropad") #DEBUG: Change me to ensure uploaded version matches.
+print("HELLO-Dumb macropad (LightCtrl3Boards)") #DEBUG: Change me to ensure uploaded version matches.
 
 while True:
 	#Filter button inputs into state control signals:

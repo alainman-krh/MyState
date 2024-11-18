@@ -26,18 +26,21 @@ class SigIO_UART(SigIOController):
 #Implement SigIOIF interface:
 #-------------------------------------------------------------------------------
 	def readline_noblock(self):
-		return self.uart.readline() #non-blocking
+		line_bytes = self.uart.readline() #non-blocking
+		if line_bytes is None:
+			return None
+		return line_bytes.decode("utf-8")
 
 	def readline_block(self):
 		#Doesn't completely block. Can fail (return: None) - but will not immediately return.
 		tstart = now_ms()
 		while True:
-			line = self.uart.readline()
-			if line != None:
-				return line
+			line_bytes = self.uart.readline() #non-blocking
+			if line_bytes != None:
+				return line_bytes.decode("utf-8")
 			twait = now_ms() - tstart
 			if twait >= self.timeoutms_sigio:
 				return None
 
 	def write(self, msgstr):
-		self.uart.write(msgstr)
+		self.uart.write(msgstr.encode("utf-8"))

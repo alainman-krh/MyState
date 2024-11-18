@@ -33,9 +33,25 @@ class SigIOIF:
 #==SigIOController
 #===============================================================================
 class SigIOController(SigIOIF):
+	r"""
+	TODO:
+	- Find a way NOT to create list of signals when reading IO-stream (using Signal_Deserialize).
+	- Likely beneficial to minimize allocations."""
+
 	def __init__(self, listener:SignalListenerIF=None):
 		self.listener = listener
-		self.cache_sigval = SigValue("","",0)
+		self.cache_siglist = None #Unprocessed signals/messages
+		self.cache_sigval = SigValue("","",0) #For sending OUT signals
+
+#-------------------------------------------------------------------------------
+	def _cache_siglist_pop(self):
+		siglist = self.cache_siglist
+		if siglist is None or len(siglist) < 1:
+			return None
+
+		sig = siglist[0]
+		self.cache_siglist = None if (len(siglist) < 2) else siglist[1:] #Update cache
+		return sig
 
 #-------------------------------------------------------------------------------
 	def send_signal(self, sig:SigAbstract, block=True):
@@ -87,9 +103,8 @@ class SigIOController(SigIOIF):
 		self.write(msgval); self.write("\n")
 		return True #wasproc
 
-	def _process_signal_str(self, msgstr:str):
+	def _process_signal_list(self, siglist):
 		success = True
-		siglist = Signal_Deserialize(msgstr)
 		for sig in siglist: #A single signal can have multiple components (ex: R,G,B)
 			if type(sig) is SigGet:
 				wasproc = self._signal_get(sig)
@@ -103,18 +118,46 @@ class SigIOController(SigIOIF):
 		return success
 
 #-------------------------------------------------------------------------------
+	def read_signal_next(self):
+		"""Read next signal (one at a time).
+		Returns: None or one of `SigAbstract`.
+		"""
+		#Process remaining messages in cache first:
+		sig = self._cache_siglist_pop()
+		if sig != None:
+			return sig
+
+		#Look for new signals:
+		msgstr = self.readline_noblock()
+		if msgstr is None:
+			return None
+		msgstr = msgstr.strip()
+		self.cache_siglist = Signal_Deserialize(msgstr)
+		sig = self._cache_siglist_pop()
+		return sig
+
+#-------------------------------------------------------------------------------
 	def process_signals(self):
 		"""Process any incomming signals
 
 		Requires: `.listener` defined (!= None)
 		"""
 		success = True
+
+		#Process remaining messages in cache first
+		siglist = self.cache_siglist
+		if siglist != None:
+			success &= self._process_signal_list(siglist)
+		self.cache_siglist = None #Update: No un-processed signals
+
+		#Process any new messages:
 		while True:
 			msgstr = self.readline_noblock()
 			if msgstr is None:
 				break #Done
 			msgstr = msgstr.strip()
-			success &= self._process_signal_str(msgstr)
+			siglist = Signal_Deserialize(msgstr)
+			success &= self._process_signal_list(siglist)
 		return success
 
 
