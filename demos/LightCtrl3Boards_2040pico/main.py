@@ -11,6 +11,9 @@ import os
 
 #==Main configuration
 #===============================================================================
+#Common baud rates: 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600
+BAUDRATE_MACROPAD = 115200 #Talking to macropad
+SIGBUFSZ_RX = 128 #Buffer size for recieving MyState "signals". Should be sufficient for a few signals without overflowing
 USEOPT_ROTENCODERS = True #Disable if no NeoRotary 4 connected through I2C.
 KPMAP_SWITCHES = { #Mapping for {btnidx => area} (See: StateDef.STATEBLK_MAIN)
 	0: "kitchen", 1: "livingroom", 2: "garage",
@@ -22,7 +25,8 @@ TX_MACROPAD = board.GP12; RX_MACROPAD = board.GP13
 
 #==Global declarations
 #===============================================================================
-UART_MACROPAD = busio.UART(TX_MACROPAD, RX_MACROPAD, baudrate=9600) #115200 #Talks to controller
+UART_MACROPAD = busio.UART(TX_MACROPAD, RX_MACROPAD, baudrate=BAUDRATE_MACROPAD, receiver_buffer_size=SIGBUFSZ_RX) #Talking to MacroPad
+
 
 #==Global declarations
 #===============================================================================

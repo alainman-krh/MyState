@@ -62,11 +62,12 @@ class SigIOController(SigIOIF):
 		"""
 		msgstr = sig.serialize()
 		if not block:
-			self.write("!")
+			#self.write("!") #Optional?
 			self.write(msgstr)
 			return True #Assume worked
 		needsval = (type(sig) is SigGet)
 
+		#self.write("?")
 		self.write(msgstr)
 		ans_str = self.readline_block() #Might timeout, get bad response, etc (must keep going)
 		if ans_str is None:

@@ -17,12 +17,13 @@ On STEMMA-QT:
 
 #==Main configuration
 #===============================================================================
-TX = board.SDA; RX = board.SCL #Blue/Yellow on STEMMA-QT port
+BAUDRATE_CTRL = 115200 #Talking to controller
+TX_CTRL = board.SDA; RX_CTRL = board.SCL #Blue/Yellow on STEMMA-QT port
 
 
 #==Global declarations
 #===============================================================================
-UART_CTRL = busio.UART(TX, RX, baudrate=9600) #115200 #Talks to controller
+UART_CTRL = busio.UART(TX_CTRL, RX_CTRL, baudrate=BAUDRATE_CTRL) #Talking to controller
 UART_SIGIO = SigIO_UART(UART_CTRL)
 KP_BUTTONS = [KeypadElement(idx=i) for i in range(12)]
 KP_ENCKNOB = KEYPAD_ENCODER #Alias
@@ -43,15 +44,15 @@ while True:
 	for (idx, key) in enumerate(KP_BUTTONS):
 		key:KeypadElement
 		key_event = key.events.get()
-		if key_event:
-			if key_event.pressed:
-				SIG_BTN_PRESS.val = idx
-				UART_SIGIO.send_signal(SIG_BTN_PRESS)
-				print("PRESS:", idx)
+		if not key_event: continue #Nothing. Check next key
+		if key_event.pressed:
+			SIG_BTN_PRESS.val = idx
+			print("PRESS:", idx)
+			UART_SIGIO.send_signal(SIG_BTN_PRESS, block=False) #Don't need a response
 
 	#Filter built-in rotary encoder knob into state control signals:
 	delta = KP_ENCKNOB.read_delta() #Resets position to 0 every time.
 	if delta != 0:
 		SIG_ENC_CHANGE.val = delta
-		UART_SIGIO.send_signal(SIG_ENC_CHANGE)
+		UART_SIGIO.send_signal(SIG_ENC_CHANGE, block=False) #Don't need a response
 		print("CHANGE:", delta)
