@@ -30,8 +30,8 @@ KP_ENCKNOB = KEYPAD_ENCODER #Alias
 
 #==Cache of signals to send to main controller (avoid re-creating objects)
 #===============================================================================
-SIG_BTN_PRESS = SigEvent("KP", "BTNPRESS", 0) #Value: Button that was pressed
-SIG_ENC_CHANGE = SigEvent("KP", "ENCCHANGE", 0) #Value: Delta of the encoder
+SIG_BTN_PRESS = SigEvent("KP", "BTNPRESS") #Value: Button that was pressed
+SIG_ENC_CHANGE = SigEvent("KP", "ENCCHANGE") #Value: Delta of the encoder
 
 
 #==Main loop
