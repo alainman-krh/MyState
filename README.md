@@ -1,8 +1,8 @@
 # MyState
 Framework to simplify configuration and control of appliance-like devices.
 
-Extras:
-- Utilize on `SigLink` to allow outside control though serial/IO connection.
+✨Hilights:
+- Call `SigLink.process_signals()` to enable easy device control via serial/IO connection.
 
 ## Features
 - Route raw hardware signals through ready-built filters that provide a solid human-interface experience.
@@ -16,5 +16,5 @@ Extras:
     as reacting to changes in the model/state data.
 
 # Comments
-- Libraries meant to handle user input that might get corrupted (ex: debounce signals).
-- Will not typically raise exceptions. Will just ignore what can't be processed.
+- Libraries designed to handle user input that might get corrupted (ex: debounce signals).
+- Will not to raise exceptions, but will instead ignore signals/move on when they cannot be processed.
