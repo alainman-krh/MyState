@@ -21,7 +21,8 @@ class SigAbstract_wVal(SigAbstract):
 		super().__init__(section, id, val)
 
 class SigAbstract_NoVal(SigAbstract):
-	def __init__(self, section, id=""):
+	def __init__(self, section, id="", val=0):
+		#NOTE: Must accept val... when using Signal_Deserialize()
 		super().__init__(section, id)
 
 	#@abstractmethod #Doesn't exist
