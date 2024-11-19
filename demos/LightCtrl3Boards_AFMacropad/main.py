@@ -48,11 +48,11 @@ while True:
 		if key_event.pressed:
 			SIG_BTN_PRESS.val = idx
 			print("PRESS:", idx)
-			COM_MAINCTRL.send_signal(SIG_BTN_PRESS, block=False) #Don't need a response
+			COM_MAINCTRL.send_signal(SIG_BTN_PRESS) #Don't need a response
 
 	#Filter built-in rotary encoder knob into state control signals:
 	delta = KP_ENCKNOB.read_delta() #Resets position to 0 every time.
 	if delta != 0:
 		SIG_ENC_CHANGE.val = delta
-		COM_MAINCTRL.send_signal(SIG_ENC_CHANGE, block=False) #Don't need a response
+		COM_MAINCTRL.send_signal(SIG_ENC_CHANGE) #Don't need a response
 		print("CHANGE:", delta)
