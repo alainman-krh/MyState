@@ -3,7 +3,7 @@
 from StateDef import MYSTATE #Defines device state
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
 from IFaceDef_Macropad import PhyController
-from EasyCktIO.USBSerial import SigIO_USBHost
+from EasyCktIO.USBSerial import SigLink_USBHost
 import os
 
 
@@ -19,7 +19,7 @@ FILEPATH_CONFIG = "config_reset.state" #User can set initial state here (list of
 
 #==Global declarations
 #===============================================================================
-HOSTIO = SigIO_USBHost(MYSTATE)
+HOSTIO = SigLink_USBHost(MYSTATE)
 CTRLPAD = PhyController(KPMAP_SWITCHES)
 if USEOPT_ROTENCODERS:
 	from Opt_RotEncoder import ENCODERS_I2C

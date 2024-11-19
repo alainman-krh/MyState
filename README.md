@@ -2,7 +2,7 @@
 Framework to simplify configuration and control of appliance-like devices.
 
 Extras:
-- (TODO) Turn on `IOLink` to allow outside control though serial/IO connection.
+- Utilize on `SigLink` to allow outside control though serial/IO connection.
 
 ## Features
 - Route raw hardware signals through ready-built filters that provide a solid human-interface experience.

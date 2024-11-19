@@ -2,8 +2,8 @@
 #-------------------------------------------------------------------------------
 from StateDef import MYSTATE #Defines device state
 #from MyState.SigTools import SignalListenerIF
-from EasyCktIO.USBSerial import SigIO_USBHost
-from EasyCktIO.UART import SigIO_UART
+from EasyCktIO.USBSerial import SigLink_USBHost
+from EasyCktIO.UART import SigLink_UART
 from MyState.Signals import SigEvent
 import board, busio
 import os
@@ -30,8 +30,8 @@ UART_MACROPAD = busio.UART(TX_MACROPAD, RX_MACROPAD, baudrate=BAUDRATE_MACROPAD,
 
 #==Global declarations
 #===============================================================================
-HOSTIO = SigIO_USBHost(MYSTATE)
-SIGIO_MACROPAD_UART = SigIO_UART(UART_MACROPAD)
+HOSTIO = SigLink_USBHost(MYSTATE)
+SIGIO_MACROPAD_UART = SigLink_UART(UART_MACROPAD)
 if USEOPT_ROTENCODERS:
 	from Opt_RotEncoder import ENCODERS_I2C
 	print("ENCODERS DETECTED")

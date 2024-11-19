@@ -4,7 +4,7 @@ from .Signals import SigUpdate, SigSet, SigGet, SigIncrement, SigToggle
 from .Signals import SigAbstract, SigValue, SigDump
 from .Primitives import StateField_Int, FieldGroup
 from .SigTools import StateObserverIF, SignalListenerIF
-from .SigIO import SigIOScript
+from .SigIO import SigLink_Script
 import io
 
 r"""Info relating to state
@@ -201,7 +201,7 @@ class ListenerRoot(SignalListenerIF):
 		try:
 			with io.open(filepath, "r") as fio:
 				scriptlines = fio.readlines()
-			script = SigIOScript(self, scriptlines)
+			script = SigLink_Script(self, scriptlines)
 			success = script.process_signals()
 			self.stateblocks_triggerupdate(force=forceupdate)
 		finally:

@@ -1,7 +1,7 @@
 #EasyCktIO/UART.py: Tools to communicate more easily using UART.
 #-------------------------------------------------------------------------------
 from MyState.SigTools import SignalListenerIF
-from MyState.SigIO import SigIOController
+from MyState.SigIO import AbstractSigLink
 from MyState.CtrlInputs.Timebase import now_ms
 import busio
 
@@ -13,9 +13,9 @@ Standard serial baud rates:
 """
 
 
-#==SigIO_UART
+#==SigLink_UART
 #===============================================================================
-class SigIO_UART(SigIOController):
+class SigLink_UART(AbstractSigLink):
 	"""Read a script from a string"""
 	def __init__(self, uart:busio.UART, listener:SignalListenerIF=None, timeoutms_sigio=1_000):
 		super().__init__(listener)

@@ -14,7 +14,7 @@ MSGDUMP_EOT = "DMP EOT"
 #===============================================================================
 class SigIOIF:
 	r"""Standard way to interface with IO com channels used for signalling
-	(Split out from SigIOController for readability purposes)
+	(Split out from AbstractSigLink for readability purposes)
 
 	IMPORTANT: Implementation should provide a reasonable timeout value for .readline_block().
 	"""
@@ -30,9 +30,9 @@ class SigIOIF:
 		pass
 
 
-#==SigIOController
+#==AbstractSigLink
 #===============================================================================
-class SigIOController(SigIOIF):
+class AbstractSigLink(SigIOIF): #Must implement SigIOIF
 	r"""
 	TODO:
 	- Find a way NOT to create list of signals when reading IO-stream (using Signal_Deserialize).
@@ -162,9 +162,9 @@ class SigIOController(SigIOIF):
 		return success
 
 
-#==SigIOScript
+#==SigLink_Script
 #===============================================================================
-class SigIOScript(SigIOController):
+class SigLink_Script(AbstractSigLink):
 	"""Read a script from a string"""
 	def __init__(self, listener:SignalListenerIF, scriptlines=tuple()):
 		super().__init__(listener)

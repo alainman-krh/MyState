@@ -2,7 +2,7 @@
 #-------------------------------------------------------------------------------
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
 from MyState.Main import StateBlock, ListenerRoot
-from EasyCktIO.UART import SigIO_UART
+from EasyCktIO.UART import SigLink_UART
 from MyState.Signals import SigEvent
 import board, busio
 
@@ -24,7 +24,7 @@ TX_CTRL = board.SDA; RX_CTRL = board.SCL #Blue/Yellow on STEMMA-QT port
 #==Global declarations
 #===============================================================================
 UART_CTRL = busio.UART(TX_CTRL, RX_CTRL, baudrate=BAUDRATE_CTRL) #Talking to controller
-UART_SIGIO = SigIO_UART(UART_CTRL)
+UART_SIGIO = SigLink_UART(UART_CTRL)
 KP_BUTTONS = [KeypadElement(idx=i) for i in range(12)]
 KP_ENCKNOB = KEYPAD_ENCODER #Alias
 
