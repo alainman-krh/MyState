@@ -19,6 +19,17 @@ class SignalListenerIF: #Interface class
 		"""Returns: `wasproc` (was processed)"""
 		pass
 
+class SignalAwareStateIF(SignalListenerIF): #Interface class
+	#@abstractmethod #Doesn't exist
+	def state_getval(self, section, id):
+		pass
+	def state_getdump(self, section):
+		pass
+	def process_signal(self, sig:SigAbstract):
+		"""Returns: `wasproc` (was processed)"""
+		pass
+
+
 
 #==Helper functions
 #===============================================================================

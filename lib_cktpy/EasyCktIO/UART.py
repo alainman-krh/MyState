@@ -1,7 +1,7 @@
 #EasyCktIO/UART.py: Tools to communicate more easily using UART.
 #-------------------------------------------------------------------------------
-from MyState.SigTools import SignalListenerIF
-from MyState.SigIO import AbstractSigLink
+from MyState.SigTools import SignalAwareStateIF
+from MyState.SigIO import SigIOIF, SigCom, SigLink
 from MyState.CtrlInputs.Timebase import now_ms
 import busio
 
@@ -13,12 +13,11 @@ Standard serial baud rates:
 """
 
 
-#==SigLink_UART
+#==SigIO_UART/SigCom_UART/SigLink_UART
 #===============================================================================
-class SigLink_UART(AbstractSigLink):
-	"""Read a script from a string"""
-	def __init__(self, uart:busio.UART, listener:SignalListenerIF=None, timeoutms_sigio=1_000):
-		super().__init__(listener)
+class SigIO_UART(SigIOIF):
+	"""Implement SigIOIF interface for a UART device"""
+	def __init__(self, uart:busio.UART, timeoutms_sigio=1_000):
 		self.uart = uart
 		self.uart.timeout = 0 #Is it wise to change it?? Should we just create UART directly?
 		self.timeoutms_sigio = timeoutms_sigio
@@ -44,3 +43,14 @@ class SigLink_UART(AbstractSigLink):
 
 	def write(self, msgstr):
 		self.uart.write(msgstr.encode("utf-8"))
+
+#Convenience constructors
+#-------------------------------------------------------------------------------
+def SigCom_UART(uart:busio.UART, timeoutms_sigio=1_000):
+	io = SigIO_UART(uart, timeoutms_sigio=timeoutms_sigio)
+	return SigCom(io)
+def SigLink_UART(uart:busio.UART, state:SignalAwareStateIF, timeoutms_sigio=1_000):
+	io = SigIO_UART(uart, timeoutms_sigio=timeoutms_sigio)
+	return SigLink(io, state)
+
+#Last line

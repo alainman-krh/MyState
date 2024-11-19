@@ -7,7 +7,7 @@ Extras:
 ## Features
 - Route raw hardware signals through ready-built filters that provide a solid human-interface experience.
 - Load load/save config/controlled state from a single function call.
-- Let anyone control your device by linking state to a serial/IO connection.
+- Let anyone control your device using `SigLink` interface though a serial/IO connection.
 
 # Details
 - Framework provides access to device state using something the author calls a

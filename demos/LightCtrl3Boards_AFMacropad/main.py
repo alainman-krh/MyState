@@ -2,7 +2,7 @@
 #-------------------------------------------------------------------------------
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
 from MyState.Main import StateBlock, ListenerRoot
-from EasyCktIO.UART import SigLink_UART
+from EasyCktIO.UART import SigCom_UART
 from MyState.Signals import SigEvent
 import board, busio
 
@@ -17,14 +17,14 @@ On STEMMA-QT:
 
 #==Main configuration
 #===============================================================================
-BAUDRATE_CTRL = 115200 #Talking to controller
-TX_CTRL = board.SDA; RX_CTRL = board.SCL #Blue/Yellow on STEMMA-QT port
+BAUDRATE_MAINCTRL = 115200 #Talking to main controller
+TX_MAINCTRL = board.SDA; RX_MAINCTRL = board.SCL #Blue/Yellow on STEMMA-QT port
 
 
 #==Global declarations
 #===============================================================================
-UART_CTRL = busio.UART(TX_CTRL, RX_CTRL, baudrate=BAUDRATE_CTRL) #Talking to controller
-UART_SIGIO = SigLink_UART(UART_CTRL)
+UART_MAINCTRL = busio.UART(TX_MAINCTRL, RX_MAINCTRL, baudrate=BAUDRATE_MAINCTRL) #Talking to main controller
+COM_MAINCTRL = SigCom_UART(UART_MAINCTRL) #No link to state. Manually process messages.
 KP_BUTTONS = [KeypadElement(idx=i) for i in range(12)]
 KP_ENCKNOB = KEYPAD_ENCODER #Alias
 
@@ -48,11 +48,11 @@ while True:
 		if key_event.pressed:
 			SIG_BTN_PRESS.val = idx
 			print("PRESS:", idx)
-			UART_SIGIO.send_signal(SIG_BTN_PRESS, block=False) #Don't need a response
+			COM_MAINCTRL.send_signal(SIG_BTN_PRESS, block=False) #Don't need a response
 
 	#Filter built-in rotary encoder knob into state control signals:
 	delta = KP_ENCKNOB.read_delta() #Resets position to 0 every time.
 	if delta != 0:
 		SIG_ENC_CHANGE.val = delta
-		UART_SIGIO.send_signal(SIG_ENC_CHANGE, block=False) #Don't need a response
+		COM_MAINCTRL.send_signal(SIG_ENC_CHANGE, block=False) #Don't need a response
 		print("CHANGE:", delta)

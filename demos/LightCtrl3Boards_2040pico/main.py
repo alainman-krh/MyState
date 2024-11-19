@@ -3,7 +3,7 @@
 from StateDef import MYSTATE #Defines device state
 #from MyState.SigTools import SignalListenerIF
 from EasyCktIO.USBSerial import SigLink_USBHost
-from EasyCktIO.UART import SigLink_UART
+from EasyCktIO.UART import SigCom_UART
 from MyState.Signals import SigEvent
 import board, busio
 import os
@@ -25,13 +25,9 @@ TX_MACROPAD = board.GP12; RX_MACROPAD = board.GP13
 
 #==Global declarations
 #===============================================================================
+LINK_USBHOST = SigLink_USBHost(MYSTATE) #Direct link to state.
 UART_MACROPAD = busio.UART(TX_MACROPAD, RX_MACROPAD, baudrate=BAUDRATE_MACROPAD, receiver_buffer_size=SIGBUFSZ_RX) #Talking to MacroPad
-
-
-#==Global declarations
-#===============================================================================
-HOSTIO = SigLink_USBHost(MYSTATE)
-SIGIO_MACROPAD_UART = SigLink_UART(UART_MACROPAD)
+COM_MACROPAD = SigCom_UART(UART_MACROPAD) #No link to state. Manually process messages.
 if USEOPT_ROTENCODERS:
 	from Opt_RotEncoder import ENCODERS_I2C
 	print("ENCODERS DETECTED")
@@ -50,9 +46,8 @@ if FILEPATH_CONFIG in os.listdir("/"):
 print("HELLO-mainboard (LightCtrl3Boards)") #DEBUG: Change me to ensure uploaded version matches.
 
 while True:
-	HOSTIO.process_signals() #Host might send signals through USB serial
-	#SIGIO_MACROPAD_UART.process_signals()
-	sig = SIGIO_MACROPAD_UART.read_signal_next()
+	LINK_USBHOST.process_signals() #Host might send signals through USB serial
+	sig = COM_MACROPAD.read_signal_next()
 	if SigEvent == type(sig):
 		print(sig.serialize())
 	elif sig != None:

@@ -19,7 +19,7 @@ FILEPATH_CONFIG = "config_reset.state" #User can set initial state here (list of
 
 #==Global declarations
 #===============================================================================
-HOSTIO = SigLink_USBHost(MYSTATE)
+HOSTIO = SigLink_USBHost(MYSTATE) #Direct link to state.
 CTRLPAD = PhyController(KPMAP_SWITCHES)
 if USEOPT_ROTENCODERS:
 	from Opt_RotEncoder import ENCODERS_I2C

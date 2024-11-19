@@ -1,7 +1,7 @@
 #EasyCktIO/USBSerial.py: Tools to access serial over USB more easily
 #-------------------------------------------------------------------------------
-from MyState.SigTools import SignalListenerIF
-from MyState.SigIO import AbstractSigLink
+from MyState.SigTools import SignalAwareStateIF
+from MyState.SigIO import SigIOIF, SigCom, SigLink
 from usb_cdc import console as HOSTSERIAL_IN
 from array import array
 from sys import stdin, stdout
@@ -52,12 +52,11 @@ class USBSerialIn_Nonblocking():
 		return None
 
 
-#==SigLink_USBHost
+#==SigIO_USBHost/SigCom_USBHost/SigLink_USBHost
 #===============================================================================
-class SigLink_USBHost(AbstractSigLink):
-	"""Read a script from a string"""
-	def __init__(self, listener:SignalListenerIF=None):
-		super().__init__(listener)
+class SigIO_USBHost(SigIOIF):
+	"""Implement SigIOIF interface for a USB host device"""
+	def __init__(self):
 		self.istream_nonblock = USBSerialIn_Nonblocking()
 
 #Implement SigIOIF interface:
@@ -70,3 +69,13 @@ class SigLink_USBHost(AbstractSigLink):
 
 	def write(self, msgstr):
 		stdout.write(msgstr)
+
+
+#Convenience constructors
+#-------------------------------------------------------------------------------
+def SigCom_USBHost():
+	io = SigIO_USBHost()
+	return SigCom(io)
+def SigLink_USBHost(state:SignalAwareStateIF):
+	io = SigIO_USBHost()
+	return SigLink(io, state)

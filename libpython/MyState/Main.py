@@ -3,7 +3,7 @@
 from .Signals import SigUpdate, SigSet, SigGet, SigIncrement, SigToggle
 from .Signals import SigAbstract, SigValue, SigDump
 from .Primitives import StateField_Int, FieldGroup
-from .SigTools import StateObserverIF, SignalListenerIF
+from .SigTools import StateObserverIF, SignalAwareStateIF
 from .SigIO import SigLink_Script
 import io
 
@@ -15,9 +15,9 @@ Consider: 'SET Main:kitchen.enabled 1'
 
 #==StateBlock
 #===============================================================================
-class StateBlock(SignalListenerIF):
+class StateBlock(SignalAwareStateIF):
 	def __init__(self, id, field_list):
-		self.id = id
+		self.id = id #TODO: rename "section"???
 		self.field_list_set(field_list)
 		self.observers = []
 		self.state_valid = False
@@ -59,7 +59,16 @@ class StateBlock(SignalListenerIF):
 		self.observers.append(o)
 
 #-------------------------------------------------------------------------------
-	def state_getdump(self):
+	def state_getval(self, section, id):
+		if section != self.id:
+			return None
+		field:StateField_Int = self.field_d.get(id, None)
+		if field is None:
+			return None
+		return field.valget()
+
+#-------------------------------------------------------------------------------
+	def state_getdump(self, section=None):
 		"""Returns a list of `SigValue` message strings representing state."""
 		result = []
 		sigbuf = SigValue(self.id, "", 0)
@@ -132,7 +141,7 @@ class StateBlock(SignalListenerIF):
 
 #==ListenerRoot
 #===============================================================================
-class ListenerRoot(SignalListenerIF):
+class ListenerRoot(SignalAwareStateIF):
 	def __init__(self, listener_list):
 		self.listeners_setlist(listener_list)
 
@@ -165,8 +174,11 @@ class ListenerRoot(SignalListenerIF):
 		return wasproc
 
 #-------------------------------------------------------------------------------
-	def state_getfield(self, section):
-		pass
+	def state_getval(self, section, id):
+		stateblk:StateBlock = self.section_d.get(section, None)
+		if stateblk is None:
+			return None
+		return stateblk.state_getval(section, id)
 
 	def state_getdump(self, section):
 		stateblk_list = []
