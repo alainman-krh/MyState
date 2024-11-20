@@ -1,9 +1,14 @@
-#demos\LightCtrlMP_AFMacropad\IFaceDef_Macropad.py
+#LightCtrl3Boards_2040pico\StateReact.py: React code to keep device states in sync
 #-------------------------------------------------------------------------------
 from StateDef import STATEBLK_CFG, STATEBLK_MAIN, MYSTATE, StateBlock
-from MyState.Signals import SigAbstract, SigUpdate, SigToggle, SigIncrement
+from MyState.Signals import SigToggle, SigIncrement, SigSet
 from MyState.SigTools import StateObserverIF
-from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
+from MyState.SigIO import SigCom
+
+r"""COMMENTS:
+- RoomRefCache / ._build_object_cache() below are NOT strictly necessary.
+  Might be an over-optimization, especially given this is "user code" (not library code).
+"""
 
 
 #==Constants
@@ -12,12 +17,12 @@ SCALE_ENCTICK2LEVEL = 5 #Sensitivity: encoder tick to light level
 SCALE_ENCTICK2COLOR = 15 #Sensitivity: encoder tick to color level
 
 
-#==RoomConfig: 
+#==RoomRefCache: 
 #===============================================================================
-class RoomConfig:
-	"""Caches references to state data
+class RoomRefCache:
+	"""Caches references to state data and identifier strings
 	(simplifies math/code; create fewer temp strings/garbage collection)"""
-	def __init__(self, id_area):
+	def __init__(self, id_area, idx):
 		#NOTE: Ids cached for sending signals:
 		#ALT: Allow ref to StateField_Int instead of just id string???
 		self.id_enabled = id_area + ".enabled"
@@ -25,6 +30,7 @@ class RoomConfig:
 		self.id_R = id_area + ".R"
 		self.id_G = id_area + ".G"
 		self.id_B = id_area + ".B"
+		self.id_lightref = "light" + idx #Reference light by hardware index (on dumb devices)
 
 		#Field references for accessing state data:
 		fields_cfg = STATEBLK_CFG.field_d
@@ -36,76 +42,97 @@ class RoomConfig:
 		self.level = fields_main[self.id_level]
 
 
-#==PhyController: 
+#==MainStateSync: 
 #===============================================================================
-class PhyController(StateObserverIF):
-	"""Manages state of physical control panel (vs core device function: MYSTATE).
-	Also: Handles refreshing device on `.handle_update()`.
+class MainStateSync(StateObserverIF):
+	"""Reacts to changes in main state of LightControl system - keeping all
+	attached devices/widgets synchronized.
 	"""
-	def __init__(self, map_switches):
-		self.keymap = {}
-		for (btnidx, id_area) in map_switches.items():
-			self.keymap[id_area] = KeypadElement(idx=btnidx)
-		self.encknob = KEYPAD_ENCODER
-		self.area_active = "NoneYet"
+	def __init__(self, light_idxmap:dict, update_comlist):
+		"""-upadate_comlist: list<SigCom>. "Dumb devices" requiring updates to light color by index."""
+		self.light_idxmap = light_idxmap
 		self._build_object_cache()
 		#Register to observe state changes (callback to .handle_update()):
 		for blk in (STATEBLK_CFG, STATEBLK_MAIN):
 			blk:StateBlock
 			blk.observers_add(self)
+		self.update_comlist = update_comlist
 
 	def _build_object_cache(self):
 		#Try to reduce object creation/garbage collection
-		self.roomstate_map = {}
-		for id_area in self.keymap.keys():
-			self.roomstate_map[id_area] = RoomConfig(id_area)
-		self.sig_lighttoggle = SigToggle("Main", "") #id/room not specified
-		self.sig_levelchange = SigIncrement("Main", "", 0)
-		self.sig_colorchange_vect = tuple(SigIncrement("CFG", "", 0) for i in range(3))
+		self.roomcache_map = {} #Pre-built strings/
+		for (idx, id_area) in self.light_idxmap.items():
+			self.roomcache_map[idx] = RoomRefCache(id_area, idx)
+		#Sets light color/intensity as a single value understood by target device:
+		self.sig_lightval_update = SigSet("Main", "light", 0)
 
-	#Synchronizing macropad with MYSTATE
+	#Helper functions:
 #-------------------------------------------------------------------------------
-	def compute_color(self, cfg:RoomConfig):
-		color_100 = (cfg.R.val, cfg.G.val, cfg.B.val) #At full brightness
-		scale = (cfg.level.val / 100)
-		scale *= cfg.enabled.val
-		return tuple(int(vi*scale) for vi in color_100)
+	def compute_color(self, refc:RoomRefCache):
+		color_100 = (refc.R.val, refc.G.val, refc.B.val) #At full brightness
+		scale = (refc.level.val / 100)
+		scale *= refc.enabled.val
+		return tuple(min(max(0, int(vi*scale)), 255) for vi in color_100)
 
 	def update_lights(self):
-		for (id_area, sw) in self.keymap.items():
-			sw:KeypadElement
-			cfg = self.roomstate_map[id_area]
-			color = self.compute_color(cfg)
-			sw.pixel_set(color)
+		for (idx, refc) in self.roomcache_map.items():
+			refc:RoomRefCache
+			color = self.compute_color(refc)
+			color_int24 = (color[0]<<16) | (color[1]<<8) | (color[2])
+			self.sig_lightval_update.id = refc.id_lightref
+			self.sig_lightval_update.val = color_int24
+			for com in self.update_comlist:
+				com:SigCom
+				com.send_signal(self.sig_lightval_update)
 
 	#Refreshing macropad when state data changes
 #-------------------------------------------------------------------------------
 	def handle_update(self, id_section:str):
 		"""Refreshes macropad after MYSTATE gets updated"""
-		section = None
-		if "CFG" == id_section:
-			section:StateBlock = STATEBLK_CFG
-		elif "Main" == id_section:
-			section:StateBlock = STATEBLK_MAIN
-		else:
-			return False
 		self.update_lights()
 
 		if False: #Debug code: Print state
+			section = None
+			if "CFG" == id_section:
+				section:StateBlock = STATEBLK_CFG
+			elif "Main" == id_section:
+				section:StateBlock = STATEBLK_MAIN
+			else:
+				return False
 			for (id, field) in section.field_d.items():
 				print(f"{id}: {field.val}")
 			return True
 
-	#Processing macropad sense inputs (Indirection before affecting `MYSTATE`)
-#-------------------------------------------------------------------------------
+
+#==SenseFilter: 
+#===============================================================================
+class SenseFilter:
+	"""Manages/filters raw signals from sense devices, generating appropriate
+	state-change signals (Indirection before affecting `MYSTATE`).
+
+	Also maintains state of an "active" area being operated on (depends on last
+	key pressed on macropad).
+	"""
+	def __init__(self, roomcache_map:dict):
+		"""-roomcache_map: Constructed by MainStateSync object."""
+		self.roomcache_map = roomcache_map
+		self.area_active = "NoneYet"
+		self._build_object_cache()
+
+	def _build_object_cache(self):
+		#Try to reduce object creation/garbage collection (over-optimization??)
+		self.sig_lighttoggle = SigToggle("Main", "") #id/room not specified
+		self.sig_levelchange = SigIncrement("Main", "", 0)
+		self.sig_colorchange_vect = tuple(SigIncrement("CFG", "", 0) for i in range(3))
+
 	def area_setactive(self, id_newarea):
 		self.area_active = id_newarea
-		cfg:RoomConfig = self.roomstate_map[id_newarea]
-		self.sig_lighttoggle.id = cfg.id_enabled
-		self.sig_levelchange.id = cfg.id_level
-		self.sig_colorchange_vect[0].id = cfg.id_R
-		self.sig_colorchange_vect[1].id = cfg.id_G
-		self.sig_colorchange_vect[2].id = cfg.id_B
+		refc:RoomRefCache = self.roomcache_map[id_newarea]
+		self.sig_lighttoggle.id = refc.id_enabled
+		self.sig_levelchange.id = refc.id_level
+		self.sig_colorchange_vect[0].id = refc.id_R
+		self.sig_colorchange_vect[1].id = refc.id_G
+		self.sig_colorchange_vect[2].id = refc.id_B
 
 	def filter_keypress(self, id_area):
 		self.area_setactive(id_area) #Updates sig_lighttoggle.id
