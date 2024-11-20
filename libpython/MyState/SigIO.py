@@ -1,32 +1,15 @@
-#MyState/SigIO.py
+#MyState/SigIO
 #-------------------------------------------------------------------------------
 from .Signals import SigUpdate, SigSet, SigGet, SigIncrement, SigToggle
 from .Signals import SigAbstract, SigValue, SigDump
 from .SigTools import SignalAwareStateIF, Signal_Deserialize
+from .IOWrap import IOWrapIF, IOWrap_Script
 
 
 #==Constants
 #===============================================================================
 MSGDUMP_EOT = "DMP EOT"
 MSG_SIGACK = "ACK" #For blocking transmissions (if not returning SigValue)
-
-
-#==SigIOIF
-#===============================================================================
-class SigIOIF:
-	r"""Standard way to interface with IO com channels used for signalling
-	IMPORTANT: Implementation should provide a reasonable timeout value for .readline_block().
-	"""
-	#@abstractmethod #Doesn't exist
-	def readline_noblock(self):
-		#Returns `None` if data not yet available
-		pass
-
-	def readline_block(self):
-		pass
-
-	def write(self, msgstr):
-		pass
 
 
 #==SigCom
@@ -37,7 +20,7 @@ class SigCom:
 	- Find a way NOT to create list of signals when reading IO-stream (using Signal_Deserialize).
 	- Likely beneficial to minimize allocations."""
 
-	def __init__(self, io:SigIOIF):
+	def __init__(self, io:IOWrapIF):
 		self.io = io
 		self.cache_siglist = None #Unprocessed signals/messages
 		self.cache_sigval = SigValue("", "", 0) #For sending OUT signals
@@ -129,10 +112,10 @@ class SigCom:
 
 #==SigLink
 #===============================================================================
-class SigLink(SigCom): #Must implement SigIOIF
+class SigLink(SigCom): #Must implement IOWrapIF
 	r"""Establishes a direct link between `SigIO` and `SignalAwareStateIF`."""
 
-	def __init__(self, io:SigIOIF, state:SignalAwareStateIF):
+	def __init__(self, io:IOWrapIF, state:SignalAwareStateIF):
 		super().__init__(io)
 		self.state = state
 
@@ -194,47 +177,13 @@ class SigLink(SigCom): #Must implement SigIOIF
 		return success
 
 
-#==SigIO_Script/SigCom_Script/SigLink_Script
+#==Convenience constructors (SigCom_Script/SigLink_Script)
 #===============================================================================
-class SigIO_Script(SigIOIF):
-	"""Implement SigIOIF from a "script" (list of "signal" strings)"""
-	def __init__(self, scriptlines=tuple()):
-		self.setscript_lines(scriptlines)
-
-#-------------------------------------------------------------------------------
-	def setscript_lines(self, scriptlines):
-		"Set the script from a list of lines"
-		if type(scriptlines) not in (list, tuple):
-			raise Exception("Not a proper script")
-		self.scriptlines = scriptlines
-		self.idx = 0
-
-	def setscript_str(self, script_str:str):
-		"""Set the script from a string"""
-		self.setscript_lines(script_str.splitlines())
-
-#Implement SigIOIF interface:
-#-------------------------------------------------------------------------------
-	def readline_noblock(self):
-		if self.idx >= len(self.scriptlines):
-			return None
-		line = self.scriptlines[self.idx]
-		self.idx += 1
-		return line
-
-	def readline_block(self):
-		return None #ACKs not supported in scripts
-
-	def write(self, msgstr): #Not really supported
-		return
-
-#Convenience constructors
-#-------------------------------------------------------------------------------
 def SigCom_Script(scriptlines=tuple()):
-	io = SigIO_Script(scriptlines)
+	io = IOWrap_Script(scriptlines)
 	return SigCom(io)
 def SigLink_Script(state:SignalAwareStateIF, scriptlines=tuple()):
-	io = SigIO_Script(scriptlines)
+	io = IOWrap_Script(scriptlines)
 	return SigLink(io, state)
 
 #Last line
