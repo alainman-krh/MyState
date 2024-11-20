@@ -44,7 +44,7 @@ while True:
 	for (idx, key) in enumerate(KP_BUTTONS):
 		key:KeypadElement
 		key_event = key.events.get()
-		if not key_event: continue #Nothing. Check next key
+		if not key_event: continue #Nothing. Check next key in loop
 		if key_event.pressed:
 			SIG_BTN_PRESS.val = idx
 			print("PRESS:", idx)

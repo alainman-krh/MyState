@@ -45,9 +45,9 @@ while True:
 	for (id_area, key) in CTRLPAD.keymap.items():
 		key:KeypadElement
 		key_event = key.events.get()
-		if key_event:
-			if key_event.pressed:
-				CTRLPAD.filter_keypress(id_area)
+		if not key_event: continue #Nothing. Check next key in loop
+		if key_event.pressed:
+			CTRLPAD.filter_keypress(id_area)
 
 	#Filter built-in rotary encoder knob into state control signals:
 	delta = CTRLPAD.encknob.read_delta() #Resets position to 0 every time.
