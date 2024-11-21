@@ -5,6 +5,7 @@ from StateDef import MYSTATE #Defines device state
 from EasyCktIO.USBSerial import SigLink_USBHost
 from EasyCktIO.UART import SigCom_UART
 from MyState.Signals import SigEvent
+from StateReact import MainStateSync, SenseFilter
 import board, busio
 import os
 
@@ -15,7 +16,7 @@ import os
 BAUDRATE_MACROPAD = 115200 #Talking to macropad
 SIGBUFSZ_RX = 128 #Buffer size for recieving MyState "signals". Should be sufficient for a few signals without overflowing
 USEOPT_ROTENCODERS = True #Disable if no NeoRotary 4 connected through I2C.
-KPMAP_SWITCHES = { #Mapping for {btnidx => area} (See: StateDef.STATEBLK_MAIN)
+MAP_LIGHTINDEX = { #Mapping for {light index => id_area} (See: StateDef.STATEBLK_MAIN for id_area)
 	0: "kitchen", 1: "livingroom", 2: "garage",
 	3: "bedroom1", 4: "bedroom2", 5: "bedroom3",
 }
@@ -27,7 +28,9 @@ TX_MACROPAD = board.GP12; RX_MACROPAD = board.GP13
 #===============================================================================
 LINK_USBHOST = SigLink_USBHost(MYSTATE) #Direct link to state.
 UART_MACROPAD = busio.UART(TX_MACROPAD, RX_MACROPAD, baudrate=BAUDRATE_MACROPAD, receiver_buffer_size=SIGBUFSZ_RX) #Talking to MacroPad
-COM_MACROPAD = SigCom_UART(UART_MACROPAD) #No link to state. Manually process messages.
+COM_MACROPAD = SigCom_UART(UART_MACROPAD) #No direct link to state. Manually process messages.
+STATE_SYNC = MainStateSync(MAP_LIGHTINDEX, [COM_MACROPAD]) #Keep macropad + bluefruit (TODO) lights in sync.
+SENSE_FILT = SenseFilter(STATE_SYNC.roomcache_map)
 if USEOPT_ROTENCODERS:
 	from Opt_RotEncoder import ENCODERS_I2C
 	print("ENCODERS DETECTED")
@@ -50,6 +53,16 @@ while True:
 	sig = COM_MACROPAD.read_signal_next()
 	if SigEvent == type(sig):
 		print(sig.serialize())
+		from_macropad = ("MP" == sig.section)
+		iskeypress = from_macropad and ("BTNPRESS" == sig.id)
+		isencdelta = from_macropad and ("ENCCHANGE" == sig.id)
+		if iskeypress:
+			light_idx = sig.val
+			SENSE_FILT.filter_keypress(light_idx)
+		elif isencdelta:
+			SENSE_FILT.filter_MPencoder(sig.val)
+		else:
+			print("Unexpected `SigEvent` from Macropad.")
 	elif sig != None:
 		print("Unexpected signal from Macropad.")
 
@@ -59,5 +72,5 @@ while True:
 			delta = enc.read_delta() #Relative to last time read.
 			if delta != 0:
 				print(f"ENC{i}, delta:{delta}")
-				#CTRLPAD.filter_I2Cencoder(i, delta)
+				SENSE_FILT.filter_I2Cencoder(i, delta)
 

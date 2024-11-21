@@ -57,10 +57,12 @@ class SigCom:
 		if not block:
 			#self.io.write("!") #TODO: Have a flag to indicate non-blocking?
 			self.io.write(msgstr)
+			self.io.write("\n")
 			return True #Assume worked
 
 		#self.io.write("?") #TODO: Have a flag to indicate blocking/needing response?
 		self.io.write(msgstr)
+		self.io.write("\n")
 		ans_str = self.io.readline_block() #Might timeout, get bad response, etc (must keep going)
 		if ans_str is None:
 			return None #Error

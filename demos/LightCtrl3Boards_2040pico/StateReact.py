@@ -30,7 +30,7 @@ class RoomRefCache:
 		self.id_R = id_area + ".R"
 		self.id_G = id_area + ".G"
 		self.id_B = id_area + ".B"
-		self.id_lightref = "light" + idx #Reference light by hardware index (on dumb devices)
+		self.id_lightref = "light" + str(idx) #Reference light by hardware index (on dumb devices)
 
 		#Field references for accessing state data:
 		fields_cfg = STATEBLK_CFG.field_d
@@ -83,6 +83,7 @@ class MainStateSync(StateObserverIF):
 			self.sig_lightval_update.val = color_int24
 			for com in self.update_comlist:
 				com:SigCom
+				print("Signal KEYPAD", self.sig_lightval_update.serialize())
 				com.send_signal(self.sig_lightval_update)
 
 	#Refreshing macropad when state data changes
@@ -114,9 +115,8 @@ class SenseFilter:
 	key pressed on macropad).
 	"""
 	def __init__(self, roomcache_map:dict):
-		"""-roomcache_map: Constructed by MainStateSync object."""
+		"""-roomcache_map: Constructed by `MainStateSync` object."""
 		self.roomcache_map = roomcache_map
-		self.area_active = "NoneYet"
 		self._build_object_cache()
 
 	def _build_object_cache(self):
@@ -125,20 +125,21 @@ class SenseFilter:
 		self.sig_levelchange = SigIncrement("Main", "", 0)
 		self.sig_colorchange_vect = tuple(SigIncrement("CFG", "", 0) for i in range(3))
 
-	def area_setactive(self, id_newarea):
-		self.area_active = id_newarea
-		refc:RoomRefCache = self.roomcache_map[id_newarea]
+	def area_setactive(self, light_idx):
+		refc:RoomRefCache = self.roomcache_map[light_idx]
 		self.sig_lighttoggle.id = refc.id_enabled
 		self.sig_levelchange.id = refc.id_level
 		self.sig_colorchange_vect[0].id = refc.id_R
 		self.sig_colorchange_vect[1].id = refc.id_G
 		self.sig_colorchange_vect[2].id = refc.id_B
 
-	def filter_keypress(self, id_area):
-		self.area_setactive(id_area) #Updates sig_lighttoggle.id
+	def filter_keypress(self, light_idx):
+		if light_idx not in self.roomcache_map.keys():
+			return
+		self.area_setactive(light_idx) #Updates which area is affected by signals (incl. sig_lighttoggle)
 		MYSTATE.process_signal(self.sig_lighttoggle)
 
-	def filter_KPencoder(self, delta):
+	def filter_MPencoder(self, delta):
 		self.sig_levelchange.val = delta*SCALE_ENCTICK2LEVEL
 		MYSTATE.process_signal(self.sig_levelchange)
 
