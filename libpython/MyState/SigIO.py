@@ -22,26 +22,28 @@ class SigCom:
 
 	def __init__(self, io:IOWrapIF):
 		self.io = io
-		self.cache_siglist = None #Unprocessed signals/messages
+		self.cache_siglist = [] #Unprocessed signals/messages
 		self.cache_sigval = SigValue("", "", 0) #For sending OUT signals
 
 #-------------------------------------------------------------------------------
 	def _cache_siglist_pop(self):
 		siglist = self.cache_siglist
-		if siglist is None or len(siglist) < 1:
+		if len(siglist) < 1:
 			return None
 
 		sig = siglist[0]
-		self.cache_siglist = None if (len(siglist) < 2) else siglist[1:] #Update cache
+		if (len(siglist) < 2):
+			self.cache_siglist.clear()
+		else:
+			self.cache_siglist = siglist[1:] #Update cache
 		return sig
 
 	def _cache_siglist_append(self, siglist):
-		if self.cache_siglist is None:
-			self.cache_siglist = siglist
-			return
 		if (siglist is None) or (len(siglist) < 1):
-			return #Nothing to append
-		self.cache_siglist.extend(siglist)
+			pass #Nothing to append
+		else:
+			self.cache_siglist.extend(siglist)
+		return self.cache_siglist
 
 #-------------------------------------------------------------------------------
 	def send_signal(self, sig:SigAbstract):
@@ -97,19 +99,16 @@ class SigCom:
 		"""Read next signal (one at a time).
 		Returns: None or one of `SigAbstract`.
 		"""
-		#Process remaining messages in cache first:
-		sig = self._cache_siglist_pop()
-		if sig != None:
-			return sig
+		#Read in new signals so they don't fill up IO queue:
+		while True:
+			msgstr = self.io.readline_noblock()
+			if msgstr is None:
+				break #Done
+			newsiglist = Signal_Deserialize(msgstr.strip())
+			self._cache_siglist_append(newsiglist)
 
-		#Look for new signals:
-		msgstr = self.io.readline_noblock()
-		if msgstr is None:
-			return None
-		msgstr = msgstr.strip()
-		self.cache_siglist = Signal_Deserialize(msgstr)
-		sig = self._cache_siglist_pop()
-		return sig
+		#Process next message in cache:
+		return self._cache_siglist_pop()
 
 
 #==SigLink
@@ -160,22 +159,15 @@ class SigLink(SigCom): #Must implement IOWrapIF
 #-------------------------------------------------------------------------------
 	def process_signals(self):
 		"""Process any incomming signals"""
-		success = True
-
-		#Process remaining messages in cache first
-		siglist = self.cache_siglist
-		if siglist != None:
-			success &= self._process_signal_list(siglist)
-		self.cache_siglist = None #Update: No un-processed signals
-
-		#Process any new messages:
+		#Read in new signals so they don't fill up IO queue:
 		while True:
 			msgstr = self.io.readline_noblock()
 			if msgstr is None:
 				break #Done
-			msgstr = msgstr.strip()
-			siglist = Signal_Deserialize(msgstr)
-			success &= self._process_signal_list(siglist)
+			newsiglist = Signal_Deserialize(msgstr.strip())
+			self._cache_siglist_append(newsiglist)
+
+		success = self._process_signal_list(self.cache_siglist)
 		return success
 
 
