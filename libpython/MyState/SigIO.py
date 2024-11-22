@@ -22,28 +22,16 @@ class SigCom:
 
 	def __init__(self, io:IOWrapIF):
 		self.io = io
-		self.cache_siglist = [] #Unprocessed signals/messages
+		self.sigqueue = [] #Unprocessed signals/messages
 		self.cache_sigval = SigValue("", "", 0) #For sending OUT signals
 
 #-------------------------------------------------------------------------------
-	def _cache_siglist_pop(self):
-		siglist = self.cache_siglist
-		if len(siglist) < 1:
-			return None
-
-		sig = siglist[0]
-		if (len(siglist) < 2):
-			self.cache_siglist.clear()
-		else:
-			self.cache_siglist = siglist[1:] #Update cache
-		return sig
-
 	def _cache_siglist_append(self, siglist):
 		if (siglist is None) or (len(siglist) < 1):
 			pass #Nothing to append
 		else:
-			self.cache_siglist.extend(siglist)
-		return self.cache_siglist
+			self.sigqueue.extend(siglist)
+		return self.sigqueue
 
 #-------------------------------------------------------------------------------
 	def send_signal(self, sig:SigAbstract):
@@ -95,20 +83,33 @@ class SigCom:
 		pass
 
 #-------------------------------------------------------------------------------
-	def read_signal_next(self):
-		"""Read next signal (one at a time).
-		Returns: None or one of `SigAbstract`.
+	def signalqueue_processio(self):
+		"""Read in/cache any signal available in `self.io`.
 		"""
 		#Read in new signals so they don't fill up IO queue:
 		while True:
 			msgstr = self.io.readline_noblock()
 			if msgstr is None:
 				break #Done
+			#print("NEWMSG"); print(msgstr)
 			newsiglist = Signal_Deserialize(msgstr.strip())
 			self._cache_siglist_append(newsiglist)
 
-		#Process next message in cache:
-		return self._cache_siglist_pop()
+#-------------------------------------------------------------------------------
+	def signalqueue_isempty(self):
+		return (len(self.sigqueue) < 1)
+
+	def signalqueue_popnext(self):
+		"""Must first run .signalqueue_processio()"""
+		q = self.sigqueue
+		if len(q) < 1:
+			return None
+		sig = q[0]
+		if (len(q) < 2):
+			self.sigqueue.clear()
+		else:
+			self.sigqueue = q[1:] #Update cache
+		return sig
 
 
 #==SigLink
@@ -160,15 +161,8 @@ class SigLink(SigCom): #Must implement IOWrapIF
 	def process_signals(self):
 		"""Process any incomming signals"""
 		#Read in new signals so they don't fill up IO queue:
-		while True:
-			msgstr = self.io.readline_noblock()
-			if msgstr is None:
-				break #Done
-			newsiglist = Signal_Deserialize(msgstr.strip())
-			self._cache_siglist_append(newsiglist)
-
-		success = self._process_signal_list(self.cache_siglist)
-		return success
+		self.signalqueue_processio()
+		return self._process_signal_list(self.sigqueue)
 
 
 #==Convenience constructors (SigCom_Script/SigLink_Script)

@@ -82,8 +82,8 @@ class MainStateSync(StateObserverIF):
 			self.sig_lightval_update.id = refc.id_lightref
 			self.sig_lightval_update.val = color_int24
 			for com in self.update_comlist:
+				#print("Signal KEYPAD", self.sig_lightval_update.serialize())
 				com:SigCom
-				print("Signal KEYPAD", self.sig_lightval_update.serialize())
 				com.send_signal(self.sig_lightval_update)
 
 	#Refreshing macropad when state data changes

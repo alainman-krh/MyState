@@ -47,7 +47,7 @@ while True:
 		if not key_event: continue #Nothing. Check next key in loop
 		if key_event.pressed:
 			SIG_BTN_PRESS.val = idx
-			print("PRESS:", idx)
+			#print("PRESS:", idx)
 			COM_MAINCTRL.send_signal(SIG_BTN_PRESS) #Don't need a response
 
 	#Filter built-in rotary encoder knob into state control signals:
@@ -55,20 +55,21 @@ while True:
 	if delta != 0:
 		SIG_ENC_CHANGE.val = delta
 		COM_MAINCTRL.send_signal(SIG_ENC_CHANGE) #Don't need a response
-		print("CHANGE:", delta)
+		#print("CHANGE:", delta)
 
 	#Update Neopixels:
-	while True:
-		sig = COM_MAINCTRL.read_signal_next()
-		siglist = COM_MAINCTRL.cache_siglist
-		if sig !=None and siglist is None:
-			print("signal - no cache")
-		if siglist != None:
-			N = len(siglist)
-			if N > 0:
-				print("cachlen", N)
-		if sig is None:
-			break
+	COM_MAINCTRL.signalqueue_processio()
+	if not COM_MAINCTRL.signalqueue_isempty():
+		print("NEWQUEUE")
+	while not COM_MAINCTRL.signalqueue_isempty(): #Process all available signals
+		sig = COM_MAINCTRL.signalqueue_popnext()
+#		siglist = COM_MAINCTRL.cache_siglist
+#		if sig !=None and siglist is None:
+#			print("signal - no cache")
+#		if siglist != None:
+#			N = len(siglist)
+#			if N > 0:
+#				print("cachlen", N)
 		if SigSet != type(sig):
 			print("Unknown signal:", sig.serialize())
 			continue
@@ -83,8 +84,9 @@ while True:
 				idx = int(sig.id[5:])
 			except:
 				pass #
+		#Update/set specified light value:
 		if idx in range(len(KP_BUTTONS)):
-			print(idx, f"0x{sig.val:08X}")
+			#print(idx, f"0x{sig.val:08X}")
 			neokey = KP_BUTTONS[idx]
 			neokey.pixel_set(sig.val)
 

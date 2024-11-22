@@ -50,7 +50,8 @@ print("HELLO-mainboard (LightCtrl3Boards)") #DEBUG: Change me to ensure uploaded
 
 while True:
 	LINK_USBHOST.process_signals() #Host might send signals through USB serial
-	sig = COM_MACROPAD.read_signal_next()
+	COM_MACROPAD.signalqueue_processio()
+	sig = COM_MACROPAD.signalqueue_popnext() #Low event count... don't need to loop
 	if SigEvent == type(sig):
 		print(sig.serialize())
 		from_macropad = ("MP" == sig.section)
