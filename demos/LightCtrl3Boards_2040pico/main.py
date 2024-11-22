@@ -4,7 +4,7 @@ from StateDef import MYSTATE #Defines device state
 #from MyState.SigTools import SignalListenerIF
 from EasyCktIO.USBSerial import SigLink_USBHost
 from EasyCktIO.UART import SigCom_UART
-from MyState.Signals import SigEvent
+from MyState.Signals import SigEvent, SigUpdate
 from StateReact import MainStateSync, SenseFilter
 import board, busio
 import os
@@ -53,7 +53,7 @@ while True:
 	COM_MACROPAD.signalqueue_processio()
 	sig = COM_MACROPAD.signalqueue_popnext() #Low event count... don't need to loop
 	if SigEvent == type(sig):
-		print(sig.serialize())
+		#print(sig.serialize())
 		from_macropad = ("MP" == sig.section)
 		iskeypress = from_macropad and ("BTNPRESS" == sig.id)
 		isencdelta = from_macropad and ("ENCCHANGE" == sig.id)
@@ -64,6 +64,10 @@ while True:
 			SENSE_FILT.filter_MPencoder(sig.val)
 		else:
 			print("Unexpected `SigEvent` from Macropad.")
+	elif SigUpdate == type(sig):
+		print(sig.serialize())
+		#MYSTATE.process_signal(sig)
+		MYSTATE.stateblocks_triggerupdate() #TODO Should use process_signal.
 	elif sig != None:
 		print("Unexpected signal from Macropad.")
 
@@ -72,6 +76,6 @@ while True:
 		for (i, enc) in enumerate(ENCODERS_I2C):
 			delta = enc.read_delta() #Relative to last time read.
 			if delta != 0:
-				print(f"ENC{i}, delta:{delta}")
+				#print(f"ENC{i}, delta:{delta}")
 				SENSE_FILT.filter_I2Cencoder(i, delta)
 

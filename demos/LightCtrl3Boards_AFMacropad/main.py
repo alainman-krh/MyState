@@ -2,7 +2,7 @@
 #-------------------------------------------------------------------------------
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
 from MyState.Main import StateBlock, ListenerRoot
-from MyState.Signals import SigEvent, SigSet
+from MyState.Signals import SigEvent, SigSet, SigUpdate
 from EasyCktIO.UART import SigCom_UART
 import board, busio
 
@@ -33,11 +33,13 @@ KP_ENCKNOB = KEYPAD_ENCODER #Alias
 #===============================================================================
 SIG_BTN_PRESS = SigEvent("MP", "BTNPRESS") #Value: Index of button that was pressed
 SIG_ENC_CHANGE = SigEvent("MP", "ENCCHANGE") #Value: Delta of the encoder
+SIG_UPDATE = SigUpdate("ROOT", val=1)
 
 
 #==Main loop
 #===============================================================================
 print("HELLO-Dumb macropad (LightCtrl3Boards)") #DEBUG: Change me to ensure uploaded version matches.
+COM_MAINCTRL.send_signal(SIG_UPDATE)
 
 while True:
 	#Filter button inputs into state control signals:
@@ -59,24 +61,17 @@ while True:
 
 	#Update Neopixels:
 	COM_MAINCTRL.signalqueue_processio()
-	if not COM_MAINCTRL.signalqueue_isempty():
-		print("NEWQUEUE")
+#	if not COM_MAINCTRL.signalqueue_isempty():
+#		print("NEWQUEUE")
 	while not COM_MAINCTRL.signalqueue_isempty(): #Process all available signals
 		sig = COM_MAINCTRL.signalqueue_popnext()
-#		siglist = COM_MAINCTRL.cache_siglist
-#		if sig !=None and siglist is None:
-#			print("signal - no cache")
-#		if siglist != None:
-#			N = len(siglist)
-#			if N > 0:
-#				print("cachlen", N)
 		if SigSet != type(sig):
 			print("Unknown signal:", sig.serialize())
 			continue
 
 		sig:SigSet
 		idx = None
-		print(sig.serialize())
+		#print(sig.serialize())
 		from_mainctrl = ("Main" == sig.section)
 		islightsig = from_mainctrl and ("light" == sig.id[:5])
 		if islightsig:

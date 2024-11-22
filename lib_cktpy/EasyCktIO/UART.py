@@ -21,11 +21,27 @@ class IOWrap_UART(IOWrapIF):
 		self.uart = uart
 		self.uart.timeout = 0 #Is it wise to change it?? Should we just create UART directly?
 		self.timeoutms_sigio = timeoutms_sigio
+		self.linebuf_bytes = None #Workaround. uart.readline() sometimes returns results before end of line.
 
 #Implement IOWrapIF interface:
 #-------------------------------------------------------------------------------
-	def readline_noblock(self):
+	def _readline_fix(self): #Workaround
 		line_bytes = self.uart.readline() #non-blocking
+		if line_bytes is None: return None #No change
+		if len(line_bytes) < 1: return None #Not actually anything
+		if self.linebuf_bytes is None:
+			self.linebuf_bytes = line_bytes
+		else:
+			self.linebuf_bytes += line_bytes
+		if b"\n" not in self.linebuf_bytes:
+			return None #Still don't have a full line
+		
+		#Don't check to see if we have exactly one line. Assuming that's ok:
+		line_bytes = self.linebuf_bytes; self.linebuf_bytes = None
+		return line_bytes
+
+	def readline_noblock(self):
+		line_bytes = self._readline_fix() #non-blocking
 		if line_bytes is None:
 			return None
 		return line_bytes.decode("utf-8")
@@ -34,7 +50,7 @@ class IOWrap_UART(IOWrapIF):
 		#Doesn't completely block. Can fail (return: None) - but will not immediately return.
 		tstart = now_ms()
 		while True:
-			line_bytes = self.uart.readline() #non-blocking
+			line_bytes = self._readline_fix() #non-blocking
 			if line_bytes != None:
 				return line_bytes.decode("utf-8")
 			twait = now_ms() - tstart

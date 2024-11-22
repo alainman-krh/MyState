@@ -143,9 +143,15 @@ class SigLink(SigCom): #Must implement IOWrapIF
 		return True #wasproc
 
 #-------------------------------------------------------------------------------
-	def _process_signal_list(self, siglist):
+	def process_signals(self):
+		"""Process any incomming signals"""
+		#Read in new signals so they don't fill up IO queue:
+		self.signalqueue_processio()
 		success = True
-		for sig in siglist: #A single signal can have multiple components (ex: R,G,B)
+
+		while not self.signalqueue_isempty():
+			#NOTE: A single signal can have multiple components (ex: R,G,B)
+			sig = self.signalqueue_popnext()
 			if type(sig) is SigGet:
 				wasproc = self._signal_get(sig)
 			elif type(sig) is SigDump:
@@ -155,14 +161,6 @@ class SigLink(SigCom): #Must implement IOWrapIF
 				#Acknowledge signal even if not detected:
 				self.io.write(MSG_SIGACK); self.io.write("\n")
 			success &= wasproc
-		return success
-
-#-------------------------------------------------------------------------------
-	def process_signals(self):
-		"""Process any incomming signals"""
-		#Read in new signals so they don't fill up IO queue:
-		self.signalqueue_processio()
-		return self._process_signal_list(self.sigqueue)
 
 
 #==Convenience constructors (SigCom_Script/SigLink_Script)
