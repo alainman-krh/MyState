@@ -10,6 +10,10 @@ r"""REF:
 
 Standard serial baud rates:
 - 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600
+
+# Workaround (linebuf_bytes/_readline_fix):
+- uart.readline() sometimes returns "line" before end of line is actually detected.
+- Observed on RP2040 devices (such as AF-Macropad). TODO: Investigate root cause.
 """
 
 
@@ -21,7 +25,7 @@ class IOWrap_UART(IOWrapIF):
 		self.uart = uart
 		self.uart.timeout = 0 #Is it wise to change it?? Should we just create UART directly?
 		self.timeoutms_sigio = timeoutms_sigio
-		self.linebuf_bytes = None #Workaround. uart.readline() sometimes returns results before end of line.
+		self.linebuf_bytes = None #Workaround
 
 #Implement IOWrapIF interface:
 #-------------------------------------------------------------------------------

@@ -11,6 +11,12 @@ STATEBLK_CFG = StateBlock("CFG", [
 	BGRP_RGB("bedroom1", dflt=(255,255,255)),
 	BGRP_RGB("bedroom2", dflt=(255,255,255)),
 	BGRP_RGB("bedroom3", dflt=(255,255,255)),
+	BGRP_RGB("hallway1", dflt=(255,255,255)),
+	BGRP_RGB("hallway2", dflt=(255,255,255)),
+	BGRP_RGB("hallway3", dflt=(255,255,255)),
+	BGRP_RGB("basement", dflt=(255,255,255)),
+	BGRP_RGB("mechroom", dflt=(255,255,255)),
+	BGRP_RGB("mainentrance", dflt=(255,255,255)),
 ])
 STATEBLK_MAIN = StateBlock("Main", [
 	BFLD_Toggle("kitchen.enabled", dflt=1),
@@ -26,6 +32,20 @@ STATEBLK_MAIN = StateBlock("Main", [
 	BFLD_Percent_Int("bedroom2.level", dflt=100),
 	BFLD_Toggle("bedroom3.enabled", dflt=1),
 	BFLD_Percent_Int("bedroom3.level", dflt=100),
+
+	BFLD_Toggle("hallway1.enabled", dflt=1),
+	BFLD_Percent_Int("hallway1.level", dflt=100),
+	BFLD_Toggle("hallway2.enabled", dflt=1),
+	BFLD_Percent_Int("hallway2.level", dflt=100),
+	BFLD_Toggle("hallway3.enabled", dflt=1),
+	BFLD_Percent_Int("hallway3.level", dflt=100),
+
+	BFLD_Toggle("basement.enabled", dflt=1),
+	BFLD_Percent_Int("basement.level", dflt=100),
+	BFLD_Toggle("mechroom.enabled", dflt=1),
+	BFLD_Percent_Int("mechroom.level", dflt=100),
+	BFLD_Toggle("mainentrance.enabled", dflt=1),
+	BFLD_Percent_Int("mainentrance.level", dflt=100),
 ])
 
 #Signal entry point for anything wanting to control this device (ex: PC/other uController, ...):

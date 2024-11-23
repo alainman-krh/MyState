@@ -19,6 +19,8 @@ USEOPT_ROTENCODERS = True #Disable if no NeoRotary 4 connected through I2C.
 MAP_LIGHTINDEX = { #Mapping for {light index => id_area} (See: StateDef.STATEBLK_MAIN for id_area)
 	0: "kitchen", 1: "livingroom", 2: "garage",
 	3: "bedroom1", 4: "bedroom2", 5: "bedroom3",
+	6: "hallway1", 7: "hallway2", 8: "hallway3",
+	9: "basement", 10: "mechroom", 11: "mainentrance",
 }
 FILEPATH_CONFIG = "config_reset.state" #User can set initial state here (list of "SET" commands)
 TX_MACROPAD = board.GP12; RX_MACROPAD = board.GP13
