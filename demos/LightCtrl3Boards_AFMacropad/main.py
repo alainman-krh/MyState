@@ -1,7 +1,6 @@
 #demos\LightCtrl3Boards_AFMacropad\main.py
 #-------------------------------------------------------------------------------
 from HAL_Macropad import KeypadElement, KEYPAD_ENCODER
-from MyState.Main import StateBlock, ListenerRoot
 from MyState.Signals import SigEvent, SigSet, SigUpdate
 from EasyCktIO.UART import SigCom_UART
 import board, busio
