@@ -9,7 +9,7 @@ MAP_SIGCLS = {sig.TYPE: sig for sig in Signals.SIG_ALL}
 #===============================================================================
 class StateObserverIF: #Interface class
 	#@abstractmethod #Doesn't exist
-	def handle_update(self, id_section:str):
+	def handle_update(self, section:str):
 		"""Returns: `wasproc` (was processed)"""
 		pass
 

@@ -39,6 +39,7 @@ SIG_UPDATE = SigUpdate("ROOT", val=1)
 #==Main loop
 #===============================================================================
 print("HELLO-Dumb macropad (LightCtrl3Boards)") #DEBUG: Change me to ensure uploaded version matches.
+COM_MAINCTRL.io.write("\n") #Not sure why... but seems to be needed to not miss first message
 COM_MAINCTRL.send_signal(SIG_UPDATE)
 
 while True:

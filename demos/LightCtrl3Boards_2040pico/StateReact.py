@@ -88,15 +88,15 @@ class MainStateSync(StateObserverIF):
 
 	#Refreshing macropad when state data changes
 #-------------------------------------------------------------------------------
-	def handle_update(self, id_section:str):
+	def handle_update(self, section:str):
 		"""Refreshes macropad after MYSTATE gets updated"""
 		self.update_lights()
 
 		if False: #Debug code: Print state
 			section = None
-			if "CFG" == id_section:
+			if "CFG" == section:
 				section:StateBlock = STATEBLK_CFG
-			elif "Main" == id_section:
+			elif "Main" == section:
 				section:StateBlock = STATEBLK_MAIN
 			else:
 				return False

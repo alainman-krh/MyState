@@ -35,9 +35,8 @@ SIG_UPDATE = SigUpdate("ROOT", val=1)
 #==Main loop
 #===============================================================================
 print("HELLO-Dumb CPboard light controller (LightCtrl3Boards)") #DEBUG: Change me to ensure uploaded version matches.
+COM_MAINCTRL.io.write("\n") #Not sure why... but seems to be needed to not miss first message
 COM_MAINCTRL.send_signal(SIG_UPDATE)
-NEOPIXELS[0] = (255, 0, 0)
-NEOPIXELS.show() #Send updated color values to actual neopixels
 
 while True:
 	#Update Neopixels:

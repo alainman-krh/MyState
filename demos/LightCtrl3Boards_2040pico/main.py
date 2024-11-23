@@ -36,7 +36,7 @@ COM_MACROPAD = SigCom_UART(UART_MACROPAD) #No direct link to state. Manually pro
 UART_LIGHTDISPLAY = busio.UART(TX_LIGHTDISPLAY, RX_LIGHTDISPLAY, baudrate=BAUDRATE_LIGHTDISPLAY, receiver_buffer_size=SIGBUFSZ_RX) #Talking to light display unit
 COM_LIGHTDISPLAY = SigCom_UART(UART_LIGHTDISPLAY) #No direct link to state. Manually process messages.
 
-STATE_SYNC = MainStateSync(MAP_LIGHTINDEX, [COM_MACROPAD, COM_LIGHTDISPLAY]) #Keep macropad + bluefruit displays in sync with state
+STATE_SYNC = MainStateSync(MAP_LIGHTINDEX, [COM_MACROPAD, COM_LIGHTDISPLAY]) #Keep MacroPad + Circuit Playground displays in sync with state
 SENSE_FILT = SenseFilter(STATE_SYNC.roomcache_map)
 if USEOPT_ROTENCODERS:
 	from Opt_RotEncoder import ENCODERS_I2C
@@ -45,6 +45,10 @@ if USEOPT_ROTENCODERS:
 
 #==Configuration before main loop
 #===============================================================================
+COM_LIGHTDISPLAY.io.write("\n") #Not sure why... but seems to be needed to not miss first message
+COM_MACROPAD.io.write("\n") #Not sure why... but seems to be needed to not miss first message
+SENSE_FILT.lights_setactive(0) #Knobs will control this light/area @ startup
+
 if FILEPATH_CONFIG in os.listdir("/"):
 	print("Loading user defaults...", end="")
 	MYSTATE.script_load(FILEPATH_CONFIG)
@@ -54,30 +58,37 @@ if FILEPATH_CONFIG in os.listdir("/"):
 #==Main loop
 #===============================================================================
 print("HELLO-mainboard (LightCtrl3Boards)") #DEBUG: Change me to ensure uploaded version matches.
-SENSE_FILT.lights_setactive(0) #Knobs will control this light/area @ startup
-
 while True:
 	LINK_USBHOST.process_signals() #Host might send signals through USB serial
+
+	#In case display controller (Circuit Playground) itself requests an update:
+	COM_LIGHTDISPLAY.signalqueue_processio()
+	while not COM_LIGHTDISPLAY.signalqueue_isempty(): #Process all available signals (shouldn't be too many)
+		sig = COM_LIGHTDISPLAY.signalqueue_popnext() #Low event count... don't need to loop
+		if SigUpdate == type(sig):
+			STATE_SYNC.handle_update(None) #Entire state will get sync'd
+			#TODO: Should we instead use: MYSTATE.process_signal(sig)???
+
+	#Process signals from MacroPad:
 	COM_MACROPAD.signalqueue_processio()
-	sig = COM_MACROPAD.signalqueue_popnext() #Low event count... don't need to loop
-	if SigEvent == type(sig):
-		#print(sig.serialize())
-		from_macropad = ("MP" == sig.section)
-		iskeypress = from_macropad and ("BTNPRESS" == sig.id)
-		isencdelta = from_macropad and ("ENCCHANGE" == sig.id)
-		if iskeypress:
-			light_idx = sig.val
-			SENSE_FILT.filter_keypress(light_idx)
-		elif isencdelta:
-			SENSE_FILT.filter_MPencoder(sig.val)
-		else:
-			print("Unexpected `SigEvent` from Macropad.")
-	elif SigUpdate == type(sig):
-		print(sig.serialize())
-		#MYSTATE.process_signal(sig)
-		MYSTATE.stateblocks_triggerupdate() #TODO Should use process_signal.
-	elif sig != None:
-		print("Unexpected signal from Macropad.")
+	while not COM_MACROPAD.signalqueue_isempty(): #Process all available signals (shouldn't be too many)
+		sig = COM_MACROPAD.signalqueue_popnext() #Low event count... don't need to loop
+		if SigEvent == type(sig):
+			#print(sig.serialize())
+			from_macropad = ("MP" == sig.section)
+			iskeypress = from_macropad and ("BTNPRESS" == sig.id)
+			isencdelta = from_macropad and ("ENCCHANGE" == sig.id)
+			if iskeypress:
+				light_idx = sig.val
+				SENSE_FILT.filter_keypress(light_idx)
+			elif isencdelta:
+				SENSE_FILT.filter_MPencoder(sig.val)
+			else:
+				print("Unexpected `SigEvent` from Macropad.")
+		elif SigUpdate == type(sig):
+			STATE_SYNC.handle_update(None) #Entire state will get sync'd
+		elif sig != None:
+			print("Unexpected signal from Macropad.")
 
 	#Filter external I2C encoder knobs (NeoRotary 4) - mostly to control RGB:
 	if USEOPT_ROTENCODERS:
@@ -87,3 +98,4 @@ while True:
 				#print(f"ENC{i}, delta:{delta}")
 				SENSE_FILT.filter_I2Cencoder(i, delta)
 
+#Last line
