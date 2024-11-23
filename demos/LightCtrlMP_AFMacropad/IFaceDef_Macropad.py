@@ -17,14 +17,14 @@ SCALE_ENCTICK2COLOR = 15 #Sensitivity: encoder tick to color level
 class RoomConfig:
 	"""Caches references to state data
 	(simplifies math/code; create fewer temp strings/garbage collection)"""
-	def __init__(self, id_area):
+	def __init__(self, id_light):
 		#NOTE: Ids cached for sending signals:
 		#ALT: Allow ref to StateField_Int instead of just id string???
-		self.id_enabled = id_area + ".enabled"
-		self.id_level = id_area + ".level"
-		self.id_R = id_area + ".R"
-		self.id_G = id_area + ".G"
-		self.id_B = id_area + ".B"
+		self.id_enabled = id_light + ".enabled"
+		self.id_level = id_light + ".level"
+		self.id_R = id_light + ".R"
+		self.id_G = id_light + ".G"
+		self.id_B = id_light + ".B"
 
 		#Field references for accessing state data:
 		fields_cfg = STATEBLK_CFG.field_d
@@ -44,8 +44,8 @@ class PhyController(StateObserverIF):
 	"""
 	def __init__(self, map_switches):
 		self.keymap = {}
-		for (btnidx, id_area) in map_switches.items():
-			self.keymap[id_area] = KeypadElement(idx=btnidx)
+		for (btnidx, id_light) in map_switches.items():
+			self.keymap[id_light] = KeypadElement(idx=btnidx)
 		self.encknob = KEYPAD_ENCODER
 		self.area_active = "NoneYet"
 		self._build_object_cache()
@@ -57,8 +57,8 @@ class PhyController(StateObserverIF):
 	def _build_object_cache(self):
 		#Try to reduce object creation/garbage collection
 		self.roomstate_map = {}
-		for id_area in self.keymap.keys():
-			self.roomstate_map[id_area] = RoomConfig(id_area)
+		for id_light in self.keymap.keys():
+			self.roomstate_map[id_light] = RoomConfig(id_light)
 		self.sig_lighttoggle = SigToggle("Main", "") #id/room not specified
 		self.sig_levelchange = SigIncrement("Main", "", 0)
 		self.sig_colorchange_vect = tuple(SigIncrement("CFG", "", 0) for i in range(3))
@@ -72,9 +72,9 @@ class PhyController(StateObserverIF):
 		return tuple(int(vi*scale) for vi in color_100)
 
 	def update_lights(self):
-		for (id_area, sw) in self.keymap.items():
+		for (id_light, sw) in self.keymap.items():
 			sw:KeypadElement
-			cfg = self.roomstate_map[id_area]
+			cfg = self.roomstate_map[id_light]
 			color = self.compute_color(cfg)
 			sw.pixel_set(color)
 
@@ -98,7 +98,7 @@ class PhyController(StateObserverIF):
 
 	#Processing macropad sense inputs (Indirection before affecting `MYSTATE`)
 #-------------------------------------------------------------------------------
-	def area_setactive(self, id_newarea):
+	def lights_setactive(self, id_newarea):
 		self.area_active = id_newarea
 		cfg:RoomConfig = self.roomstate_map[id_newarea]
 		self.sig_lighttoggle.id = cfg.id_enabled
@@ -107,8 +107,8 @@ class PhyController(StateObserverIF):
 		self.sig_colorchange_vect[1].id = cfg.id_G
 		self.sig_colorchange_vect[2].id = cfg.id_B
 
-	def filter_keypress(self, id_area):
-		self.area_setactive(id_area) #Updates sig_lighttoggle.id
+	def filter_keypress(self, id_light):
+		self.lights_setactive(id_light) #Updates sig_lighttoggle.id
 		MYSTATE.process_signal(self.sig_lighttoggle)
 
 	def filter_KPencoder(self, delta):

@@ -10,7 +10,7 @@ import os
 #==Main configuration
 #===============================================================================
 USEOPT_ROTENCODERS = True #Disable if no NeoRotary 4 connected through I2C.
-KPMAP_SWITCHES = { #Mapping for {btnidx => area} (See: StateDef.STATEBLK_MAIN)
+KPMAP_SWITCHES = { #Mapping for {light index => id_light} (See: StateDef.STATEBLK_MAIN)
 	0: "kitchen", 1: "livingroom", 2: "garage",
 	3: "bedroom1", 4: "bedroom2", 5: "bedroom3",
 }
@@ -42,12 +42,12 @@ while True:
 	HOSTIO.process_signals() #Host might send signals through USB serial
 
 	#Filter button inputs into state control signals:
-	for (id_area, key) in CTRLPAD.keymap.items():
+	for (id_light, key) in CTRLPAD.keymap.items():
 		key:KeypadElement
 		key_event = key.events.get()
 		if not key_event: continue #Nothing. Check next key in loop
 		if key_event.pressed:
-			CTRLPAD.filter_keypress(id_area)
+			CTRLPAD.filter_keypress(id_light)
 
 	#Filter built-in rotary encoder knob into state control signals:
 	delta = CTRLPAD.encknob.read_delta() #Resets position to 0 every time.

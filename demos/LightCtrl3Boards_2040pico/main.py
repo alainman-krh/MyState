@@ -16,7 +16,7 @@ import os
 BAUDRATE_MACROPAD = 115200 #Talking to macropad
 SIGBUFSZ_RX = 128 #Buffer size for recieving MyState "signals". Should be sufficient for a few signals without overflowing
 USEOPT_ROTENCODERS = True #Disable if no NeoRotary 4 connected through I2C.
-MAP_LIGHTINDEX = { #Mapping for {light index => id_area} (See: StateDef.STATEBLK_MAIN for id_area)
+MAP_LIGHTINDEX = { #Mapping for {light index => id_light} (See: StateDef.STATEBLK_MAIN for id_light)
 	0: "kitchen", 1: "livingroom", 2: "garage",
 	3: "bedroom1", 4: "bedroom2", 5: "bedroom3",
 	6: "hallway1", 7: "hallway2", 8: "hallway3",
@@ -49,6 +49,7 @@ if FILEPATH_CONFIG in os.listdir("/"):
 #==Main loop
 #===============================================================================
 print("HELLO-mainboard (LightCtrl3Boards)") #DEBUG: Change me to ensure uploaded version matches.
+SENSE_FILT.lights_setactive(0) #Knobs will control this light/area
 
 while True:
 	LINK_USBHOST.process_signals() #Host might send signals through USB serial

@@ -22,15 +22,15 @@ SCALE_ENCTICK2COLOR = 15 #Sensitivity: encoder tick to color level
 class RoomRefCache:
 	"""Caches references to state data and identifier strings
 	(simplifies math/code; create fewer temp strings/garbage collection)"""
-	def __init__(self, id_area, idx):
+	def __init__(self, id_light, idx):
 		#NOTE: Ids cached for sending signals:
 		#ALT: Allow ref to StateField_Int instead of just id string???
-		self.id_enabled = id_area + ".enabled"
-		self.id_level = id_area + ".level"
-		self.id_R = id_area + ".R"
-		self.id_G = id_area + ".G"
-		self.id_B = id_area + ".B"
-		self.id_lightref = "light" + str(idx) #Reference light by hardware index (on dumb devices)
+		self.id_enabled = id_light + ".enabled"
+		self.id_level = id_light + ".level"
+		self.id_R = id_light + ".R"
+		self.id_G = id_light + ".G"
+		self.id_B = id_light + ".B"
+		self.id_light_by_idx = "light" + str(idx) #Reference light by hardware index (on dumb devices)
 
 		#Field references for accessing state data:
 		fields_cfg = STATEBLK_CFG.field_d
@@ -61,8 +61,8 @@ class MainStateSync(StateObserverIF):
 	def _build_object_cache(self):
 		#Try to reduce object creation/garbage collection
 		self.roomcache_map = {} #Pre-built strings/
-		for (idx, id_area) in self.light_idxmap.items():
-			self.roomcache_map[idx] = RoomRefCache(id_area, idx)
+		for (idx, id_light) in self.light_idxmap.items():
+			self.roomcache_map[idx] = RoomRefCache(id_light, idx)
 		#Sets light color/intensity as a single value understood by target device:
 		self.sig_lightval_update = SigSet("Main", "light", 0)
 
@@ -79,7 +79,7 @@ class MainStateSync(StateObserverIF):
 			refc:RoomRefCache
 			color = self.compute_color(refc)
 			color_int24 = (color[0]<<16) | (color[1]<<8) | (color[2])
-			self.sig_lightval_update.id = refc.id_lightref
+			self.sig_lightval_update.id = refc.id_light_by_idx
 			self.sig_lightval_update.val = color_int24
 			for com in self.update_comlist:
 				#print("Signal KEYPAD", self.sig_lightval_update.serialize())
@@ -111,7 +111,7 @@ class SenseFilter:
 	"""Manages/filters raw signals from sense devices, generating appropriate
 	state-change signals (Indirection before affecting `MYSTATE`).
 
-	Also maintains state of an "active" area being operated on (depends on last
+	Also maintains state of an "active light" being operated on (depends on last
 	key pressed on macropad).
 	"""
 	def __init__(self, roomcache_map:dict):
@@ -125,7 +125,7 @@ class SenseFilter:
 		self.sig_levelchange = SigIncrement("Main", "", 0)
 		self.sig_colorchange_vect = tuple(SigIncrement("CFG", "", 0) for i in range(3))
 
-	def area_setactive(self, light_idx):
+	def lights_setactive(self, light_idx):
 		refc:RoomRefCache = self.roomcache_map[light_idx]
 		self.sig_lighttoggle.id = refc.id_enabled
 		self.sig_levelchange.id = refc.id_level
@@ -136,7 +136,8 @@ class SenseFilter:
 	def filter_keypress(self, light_idx):
 		if light_idx not in self.roomcache_map.keys():
 			return
-		self.area_setactive(light_idx) #Updates which area is affected by signals (incl. sig_lighttoggle)
+		#Updates which light is affected by subsequent control signals (incl. sig_lighttoggle):
+		self.lights_setactive(light_idx)
 		MYSTATE.process_signal(self.sig_lighttoggle)
 
 	def filter_MPencoder(self, delta):
