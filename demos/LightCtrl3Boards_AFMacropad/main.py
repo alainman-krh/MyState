@@ -18,12 +18,13 @@ On STEMMA-QT:
 #==Main configuration
 #===============================================================================
 BAUDRATE_MAINCTRL = 115200 #Talking to main controller
+SIGBUFSZ_RX = 128 #Buffer size for recieving MyState "signals". Should be sufficient for a few signals without overflowing
 TX_MAINCTRL = board.SDA; RX_MAINCTRL = board.SCL #Blue/Yellow on STEMMA-QT port
 
 
 #==Global declarations
 #===============================================================================
-UART_MAINCTRL = busio.UART(TX_MAINCTRL, RX_MAINCTRL, baudrate=BAUDRATE_MAINCTRL) #Talking to main controller
+UART_MAINCTRL = busio.UART(TX_MAINCTRL, RX_MAINCTRL, baudrate=BAUDRATE_MAINCTRL, receiver_buffer_size=SIGBUFSZ_RX) #Talking to main controller
 COM_MAINCTRL = SigCom_UART(UART_MAINCTRL) #No link to state. Manually process messages.
 KP_BUTTONS = [KeypadElement(idx=i) for i in range(12)]
 KP_ENCKNOB = KEYPAD_ENCODER #Alias
