@@ -14,8 +14,9 @@ import os
 #===============================================================================
 #Common baud rates: 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600
 BAUDRATE_MACROPAD = 115200 #Talking to macropad
-SIGBUFSZ_RX = 128 #Buffer size for recieving MyState "signals". Should be sufficient for a few signals without overflowing
-USEOPT_ROTENCODERS = True #Disable if no NeoRotary 4 connected through I2C.
+TX_MACROPAD = board.GP12; RX_MACROPAD = board.GP13
+BAUDRATE_LIGHTDISPLAY = 115200 #Talking to device that displays lights (not just macropad keys)
+TX_LIGHTDISPLAY = board.GP20; RX_LIGHTDISPLAY = board.GP21
 MAP_LIGHTINDEX = { #Mapping for {light index => id_light} (See: StateDef.STATEBLK_MAIN for id_light)
 	0: "kitchen", 1: "livingroom", 2: "garage",
 	3: "bedroom1", 4: "bedroom2", 5: "bedroom3",
@@ -23,7 +24,8 @@ MAP_LIGHTINDEX = { #Mapping for {light index => id_light} (See: StateDef.STATEBL
 	9: "basement", 10: "mechroom", 11: "mainentrance",
 }
 FILEPATH_CONFIG = "config_reset.state" #User can set initial state here (list of "SET" commands)
-TX_MACROPAD = board.GP12; RX_MACROPAD = board.GP13
+SIGBUFSZ_RX = 128 #Buffer size for recieving MyState "signals". Should be sufficient for a few signals without overflowing
+USEOPT_ROTENCODERS = True #Disable if no NeoRotary 4 connected through I2C.
 
 
 #==Global declarations
@@ -31,7 +33,10 @@ TX_MACROPAD = board.GP12; RX_MACROPAD = board.GP13
 LINK_USBHOST = SigLink_USBHost(MYSTATE) #Direct link to state.
 UART_MACROPAD = busio.UART(TX_MACROPAD, RX_MACROPAD, baudrate=BAUDRATE_MACROPAD, receiver_buffer_size=SIGBUFSZ_RX) #Talking to MacroPad
 COM_MACROPAD = SigCom_UART(UART_MACROPAD) #No direct link to state. Manually process messages.
-STATE_SYNC = MainStateSync(MAP_LIGHTINDEX, [COM_MACROPAD]) #Keep macropad + bluefruit (TODO) lights in sync.
+UART_LIGHTDISPLAY = busio.UART(TX_LIGHTDISPLAY, RX_LIGHTDISPLAY, baudrate=BAUDRATE_LIGHTDISPLAY, receiver_buffer_size=SIGBUFSZ_RX) #Talking to light display unit
+COM_LIGHTDISPLAY = SigCom_UART(UART_LIGHTDISPLAY) #No direct link to state. Manually process messages.
+
+STATE_SYNC = MainStateSync(MAP_LIGHTINDEX, [COM_MACROPAD, COM_LIGHTDISPLAY]) #Keep macropad + bluefruit displays in sync with state
 SENSE_FILT = SenseFilter(STATE_SYNC.roomcache_map)
 if USEOPT_ROTENCODERS:
 	from Opt_RotEncoder import ENCODERS_I2C
@@ -49,7 +54,7 @@ if FILEPATH_CONFIG in os.listdir("/"):
 #==Main loop
 #===============================================================================
 print("HELLO-mainboard (LightCtrl3Boards)") #DEBUG: Change me to ensure uploaded version matches.
-SENSE_FILT.lights_setactive(0) #Knobs will control this light/area
+SENSE_FILT.lights_setactive(0) #Knobs will control this light/area @ startup
 
 while True:
 	LINK_USBHOST.process_signals() #Host might send signals through USB serial

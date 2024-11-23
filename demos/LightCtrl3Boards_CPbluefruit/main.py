@@ -18,7 +18,7 @@ NUM_NEOPIXELS = 10 #Circuit playground has 10
 PIN_NEOPIXEL = board.NEOPIXEL
 BAUDRATE_MAINCTRL = 115200 #Talking to main controller
 SIGBUFSZ_RX = 128 #Buffer size for recieving MyState "signals". Should be sufficient for a few signals without overflowing
-TX_MAINCTRL = board.SDA; RX_MAINCTRL = board.SCL
+TX_MAINCTRL = board.TX; RX_MAINCTRL = board.RX
 
 
 #==Global declarations
@@ -38,7 +38,6 @@ print("HELLO-Dumb CPboard light controller (LightCtrl3Boards)") #DEBUG: Change m
 COM_MAINCTRL.send_signal(SIG_UPDATE)
 NEOPIXELS[0] = (255, 0, 0)
 NEOPIXELS.show() #Send updated color values to actual neopixels
-print(len(NEOPIXELS))
 
 while True:
 	#Update Neopixels:
@@ -63,7 +62,7 @@ while True:
 		#Update/set specified light value:
 		if idx in range(len(NEOPIXELS)):
 			#print(idx, f"0x{sig.val:08X}")
-			NEOPIXELS[idx] = (255, 0, 0)
+			NEOPIXELS[idx] = sig.val
 			pixels_updated = True
 
 	if pixels_updated:
