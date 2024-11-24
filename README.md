@@ -9,7 +9,7 @@ Quickly build up device state, and have it automatically accessible from the out
 ## Features
 - Route raw sensed input signals through custom signal-generating filters, and
   provide a solid, uniform user-interface experience.
-- Load/save configuration/controlled state from a single function call.
+- Load custom device configuration/controlled state on startup by calling `ListenerRoot.script_load()`.
 - Let anyone control your device using `SigLink` interface (by means of a
   serial/other IO connection).
   - Ex: Let a PC control your device using signals sent from Python across its USB/serial connection.
