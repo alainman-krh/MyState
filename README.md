@@ -7,11 +7,15 @@ Quickly build up device state, and have it automatically accessible from the out
 - Call `SigLink.process_signals()` to enable easy device control via serial/IO connection.
 
 ## Features
-- Route raw input/sense signals through ready-built filters that provide a solid human-interface experience.
+- Route raw sensed input signals through custom signal-generating filters, and
+  provide a solid, uniform user-interface experience.
 - Load/save configuration/controlled state from a single function call.
-- Let anyone control your device using `SigLink` interface (by means of a serial/other IO connection).
-- Aspires to a more composable design space where interfaces are built with extension/
-  customization in mind. External devices shouldn't need hacks to work with your designs.
+- Let anyone control your device using `SigLink` interface (by means of a
+  serial/other IO connection).
+  - Ex: Let a PC control your device using signals sent from Python across its USB/serial connection.
+- Aspires to enable a future of composable, modular devices where
+  extension/customization is the norm. Getting our products to cooperate should
+  not be a constant battle requiring mounds of ugly hacks.
 
 # Details
 <!----------------------------------------------------------------------------->
