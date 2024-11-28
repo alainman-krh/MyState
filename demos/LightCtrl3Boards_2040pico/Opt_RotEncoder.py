@@ -1,4 +1,4 @@
-#demos\LightCtrlMP_AFMacropad\Opt_RotEncoder.py
+#demos\LightCtrl3Boards_2040pico\Opt_RotEncoder.py
 #-------------------------------------------------------------------------------
 from EasyCktIO.seesaw import EncoderSensorRIO, DEFAULTI2CADDR_SEESAW
 from adafruit_seesaw.seesaw import Seesaw

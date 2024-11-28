@@ -50,14 +50,3 @@ STATEBLK_MAIN = StateBlock("Main", [
 
 #Signal entry point for anything wanting to control this device (ex: PC/other uController, ...):
 MYSTATE = ListenerRoot([STATEBLK_CFG, STATEBLK_MAIN])
-
-sigstr = """
-SET CFG:kitchen.(R,G,B) (240,180,0)
-SET Main:kitchen.enabled 1
-SET Main:kitchen.level 75
-INC Main:kitchen.level -5
-TOG Main:kitchen.level
-UPD Main
-GET CFG:bedroom1.(R,G,B)
-GET CFG:kitchen.(R,G,B)
-"""

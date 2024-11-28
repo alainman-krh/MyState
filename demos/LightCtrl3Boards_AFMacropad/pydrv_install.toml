@@ -1,0 +1,19 @@
+[libs]
+dest = "$BOARDROOT/lib"
+folders = [
+"$PROJROOT/libpython/MyState",
+"$PROJROOT/lib_cktpy/EasyCktIO",
+]
+
+[project]
+dest = "$BOARDROOT"
+files = [
+"$THISPKG/HAL_Macropad.py",
+"$THISPKG/main.py",
+]
+
+[libs.CPYBUNDLE]
+dest = "$BOARDROOT/lib"
+files = [
+"$SRCLIB/neopixel.mpy",
+]

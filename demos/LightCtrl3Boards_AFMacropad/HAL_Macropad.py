@@ -1,4 +1,4 @@
-#demos\LightCtrlMP_AFMacropad\HAL_Macropad.py: Hardware Abstraction Layer
+#demos\LightCtrl3Boards_AFMacropad\HAL_Macropad.py: Hardware Abstraction Layer
 #-------------------------------------------------------------------------------
 from EasyCktIO.rotaryio import EncoderSensorRIO
 from neopixel import NeoPixel
