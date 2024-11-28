@@ -14,16 +14,14 @@ Plug in USB-C to macropad while holding the BOOTSEL button (press on rotary enco
 
 # Required packages
 <!----------------------------------------------------------------------------->
-`MyState` depends on libraries included in the "CircuitPython Library Bundle"
+Project `LightCtrlMP` depends on libraries included in the "CircuitPython Library Bundle"
 found [HERE](https://circuitpython.org/libraries):
-- `adafruit_ticks`
 - `neopixel`
 
-Project "LightCtrlMP_*" can optionally make use of Adafruit Quad Rotary Encoder (5752),
-also requiring (if `USEOPT_ROTENCODERS=True`):
-- `adafruit_bus_device/`
+Optionally, "LightCtrlMP_AFMacropad" can make use of Adafruit Quad Rotary Encoder (#5752).
+To get the quad encoders working (setting `USEOPT_ROTENCODERS=True`), the following
+libs are also required:
 - `adafruit_seesaw/`
-- `adafruit_pixelbuf.mpy`
 
 Installing dependencies (required packages):
 1. Download "Library Bundle" corresponding to your version of CircuitPython.
