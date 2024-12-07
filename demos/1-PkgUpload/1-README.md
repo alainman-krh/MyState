@@ -1,10 +1,10 @@
-## `1-DemoUpload`
+## `1-PkgUpload`
 <!----------------------------------------------------------------------------->
-Helper utilities to upload a given project/demo to CircuitPython-enabled boards.
+Helper utilities to upload a given demo/package to CircuitPython-enabled boards.
 
 # Available utilities
 <!----------------------------------------------------------------------------->
-`demo_upload.py`:
+`pkg_upload.py`:
 - The upload utilities themselves
 - Alternative to using recommended IDE/flow.
 - Works well launched from VSCode.
