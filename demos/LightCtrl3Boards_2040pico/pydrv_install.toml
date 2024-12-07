@@ -1,21 +1,21 @@
-[libs]
+[modules.CPYBUNDLE]
+dest = "$BOARDROOT/lib"
+folders = [
+"$LIBPATH_CPYBUNDLE/adafruit_seesaw",
+]
+
+[modules]
 dest = "$BOARDROOT/lib"
 folders = [
 "$PROJROOT/libpython/MyState",
 "$PROJROOT/lib_cktpy/EasyCktIO",
 ]
 
-[project]
+[package]
 dest = "$BOARDROOT"
 files = [
 "$THISPKG/StateDef.py",
 "$THISPKG/StateReact.py",
 "$THISPKG/Opt_RotEncoder.py",
 "$THISPKG/main.py",
-]
-
-[libs.CPYBUNDLE]
-dest = "$BOARDROOT/lib"
-folders = [
-"$SRCLIB/adafruit_seesaw",
 ]
