@@ -5,9 +5,9 @@ Helper utilities to upload a given demo/package to CircuitPython-enabled boards.
 
 # Available utilities
 <!----------------------------------------------------------------------------->
-`pkg_upload.py`:
-- The upload utilities themselves
+`pkg_upload.py`: The upload script itself.
 - Alternative to using recommended IDE/flow.
+- User configurable.
 - Works well launched from VSCode.
 
 # How to monitor serial output of Circuit Python device
