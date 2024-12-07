@@ -8,6 +8,7 @@ import shutil
 
 _THIS_FILE = abspath(__file__); _THIS_DIR = dirname(_THIS_FILE)
 _PROJROOT = abspath(joinpath(_THIS_DIR, "..", "..", ".."))
+_PKGROOT = abspath(joinpath(_THIS_DIR, "..", ".."))
 
 
 #=Helper functions
@@ -18,7 +19,7 @@ def path_eval(expr):
 
 def UpdateEnv(pkg, dest_drive):
 	os.environ["PROJROOT"] = _PROJROOT
-	os.environ["THISPKG"] = joinpath(_PROJROOT, "pkg_install", pkg)
+	os.environ["THISPKG"] = joinpath(_PKGROOT, pkg)
 	os.environ["BOARDROOT"] = abspath(dest_drive)
 
 def UploadFromFileDict(copyinfo:dict):
